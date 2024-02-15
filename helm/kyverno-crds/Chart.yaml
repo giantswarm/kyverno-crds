@@ -9,7 +9,7 @@ description: This app contains the Kyverno CRDs.
 
 home: https://github.com/giantswarm/kyverno-crds
 
-icon: https://s.giantswarm.io/app-icons/example/1/light.svg
+icon: https://s.giantswarm.io/app-icons/kyverno/1/light.svg
 
 sources:
 - https://github.com/kyverno/kyverno
