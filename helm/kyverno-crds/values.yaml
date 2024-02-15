@@ -8,7 +8,7 @@ global:
 image:
   registry: gsoci.azurecr.io
   repository: giantswarm/kubectl
-  tag: '1.28.5'
+  tag: '1.29.2'
   pullPolicy: IfNotPresent
 
 # Pod securityContext
