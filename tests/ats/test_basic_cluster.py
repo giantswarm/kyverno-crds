@@ -59,6 +59,6 @@ def app_job(kube_cluster: Cluster) -> List[pykube.Deployment]:
 @pytest.mark.smoke
 @pytest.mark.upgrade
 @pytest.mark.flaky(reruns=5, reruns_delay=10)
-def test_pods_available(kube_cluster: Cluster, app_job: List[pykube.Deployment]):
-    for d in app_job:
-        assert int(d.obj["status"]["succeeded"]) == 1
+def test_pods_available(kube_cluster: Cluster, app_job: List[pykube.Job]):
+    for j in app_job:
+        assert int(j.obj["status"]["succeeded"]) == 1
