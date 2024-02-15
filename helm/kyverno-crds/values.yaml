@@ -32,10 +32,11 @@ securityContext:
   seccompProfile:
     type: RuntimeDefault
 
+# Container resources
 resources:
   requests:
     cpu: 100m
-    memory: 220Mi
+    memory: 148Mi
   limits:
     cpu: 100m
-    memory: 220Mi
+    memory: 512Mi
