@@ -1,0 +1,11 @@
+apiVersion: vendir.k14s.io/v1alpha1
+directories:
+- contents:
+  - git:
+      commitTitle: Release v1.12.0-alpha.0 (#9637)...
+      sha: eef121090f1b170bbf022c538ed0e9be6a62f037
+      tags:
+      - v1.12.0-alpha.0
+    path: .
+  path: manifests/crds
+kind: LockConfig
