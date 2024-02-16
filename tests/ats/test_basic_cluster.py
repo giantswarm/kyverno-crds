@@ -40,25 +40,36 @@ def test_cluster_info(
     assert kube_cluster.kube_client is not None
     assert cluster_type != ""
 
+@pytest.mark.smoke
+def test_crds(
+    kube_cluster: Cluster
+)-> None:
+    """ Check for Kyverno CRDs """
+    crds = pykube.CustomResourceDefinition.objects(kube_cluster.kube_client).filter(selector="app.kubernetes.io/name=kyverno")
+    crd_count = len(crds)
+    logger.info(f"Kyverno CRDs found {crd_count}")
+    assert kube_cluster.kube_client is not None
+    assert len(crds) > 0
 
 # scope "module" means this is run only once, for the first test case requesting! It might be tricky
 # if you want to assert this multiple times
 @pytest.fixture(scope="module")
-def app_job(kube_cluster: Cluster) -> List[pykube.Deployment]:
+def app_job(kube_cluster: Cluster) -> List[pykube.Job]:
     job = wait_for_jobs_to_complete(
         kube_cluster.kube_client,   
-        "kyverno-crds-install-job",
-        "default",
+        ["kyverno-crds-install-job"],
+        namespace_name,
         timeout,
     )
     return job
-
 
 # when we start the tests on circleci, we have to wait for pods to be available, hence
 # this additional delay and retries
 @pytest.mark.smoke
 @pytest.mark.upgrade
 @pytest.mark.flaky(reruns=5, reruns_delay=10)
-def test_pods_available(kube_cluster: Cluster, app_job: List[pykube.Job]):
+def test_jobs_succeeded(kube_cluster: Cluster, app_job: List[pykube.Job]):
+    logger.info(f"Checking status for job {app_job}")
     for j in app_job:
         assert int(j.obj["status"]["succeeded"]) == 1
+        logger.info(f"Checking job {j}")
