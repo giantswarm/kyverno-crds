@@ -69,7 +69,6 @@ def app_job(kube_cluster: Cluster) -> List[pykube.Job]:
 @pytest.mark.upgrade
 @pytest.mark.flaky(reruns=5, reruns_delay=10)
 def test_jobs_succeeded(kube_cluster: Cluster, app_job: List[pykube.Job]):
-    logger.info(f"Checking status for job {app_job}")
     for j in app_job:
+        logger.info(f"Checking job: {j}")
         assert int(j.obj["status"]["succeeded"]) == 1
-        logger.info(f"Checking job {j}")
