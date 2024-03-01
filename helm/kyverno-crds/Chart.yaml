@@ -16,3 +16,7 @@ sources:
 version: 0.0.0-dev # [[ .Version ]] if you're using architect instead of app-build-suite
 annotations:
   application.giantswarm.io/team: shield
+
+dependencies:
+  - name: crds
+    version: 3.1.4
