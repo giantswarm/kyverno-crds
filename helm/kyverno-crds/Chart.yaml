@@ -1,7 +1,6 @@
 apiVersion: v2
-appVersion: 0.0.1
+appVersion: 1.11.4 # Same as the Kyverno version
 
-# Please make sure your name DOES NOT end in "app" or "-app".
 name: kyverno-crds
 
 # Please describe what the app provides in a sentence or two.
