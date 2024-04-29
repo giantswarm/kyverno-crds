@@ -17,7 +17,7 @@ Create chart name and version as used by the chart label.
 Selector labels
 */}}
 {{- define "labels.selector" -}}
-app.kubernetes.io/name: {{ include "name" . | quote }}
+app.kubernetes.io/name: "kyverno-crds"
 app.kubernetes.io/instance: {{ .Release.Name | quote }}
 {{- end -}}
 
@@ -26,11 +26,15 @@ Common labels
 */}}
 {{- define "labels.common" -}}
 {{ include "labels.selector" . }}
-app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+application.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 application.giantswarm.io/team: {{ index .Chart.Annotations "application.giantswarm.io/team" | quote }}
-giantswarm.io/managed-by: {{ .Release.Name | quote }}
-giantswarm.io/service-type: {{ .Values.serviceType }}
+giantswarm.io/managed-by: {{ .Release.Service | quote }}
+giantswarm.io/service-type: {{ .Values.serviceType | quote }}
 helm.sh/chart: {{ include "chart" . | quote }}
 {{- end -}}
 
+{{/* override kyverno labels */}}
+
+{{- define "kyverno.crds.labels" -}}
+{{ include "labels.common" . }}
+{{- end -}}
