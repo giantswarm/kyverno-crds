@@ -4,5 +4,5 @@ serviceType: managed
 kyverno-crds:
   annotations:
     helm.sh/resource-policy: keep
-  
+
   customLabels: {}
