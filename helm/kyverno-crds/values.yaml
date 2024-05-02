@@ -1,42 +1,8 @@
 name: kyverno-crds
 serviceType: managed
 
-global:
-  image:
-    registry: gsoci.azurecr.io
+crds:
+  annotations:
+    helm.sh/resource-policy: keep
 
-image:
-  registry: gsoci.azurecr.io
-  repository: giantswarm/kubectl
-  tag: '1.29.2'
-  pullPolicy: IfNotPresent
-
-# Pod securityContext
-podSecurityContext:
-  runAsUser: 1000
-  runAsGroup: 1000
-  runAsNonRoot: true
-  readOnlyRootFilesystem: true
-  seccompProfile:
-    type: RuntimeDefault
-
-# Container securityContext
-securityContext:
-  allowPrivilegeEscalation: false
-  capabilities:
-    drop:
-      - ALL
-  privileged: false
-  readOnlyRootFilesystem: true
-  runAsNonRoot: true
-  seccompProfile:
-    type: RuntimeDefault
-
-# Container resources
-resources:
-  requests:
-    cpu: 100m
-    memory: 148Mi
-  limits:
-    cpu: 100m
-    memory: 512Mi
+  customLabels: {}
