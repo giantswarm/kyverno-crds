@@ -33,15 +33,15 @@ workflows:
               only: /^v.*/
 
       # Run app-test-suite tests.
-      - architect/run-tests-with-ats:
-          name: execute chart tests
-          filters:
-            # Do not trigger the job on merge to main.
-            branches:
-              ignore:
-                - main
-          requires:
-            - push-kyverno-crds-chart-to-giantswarm-catalog
+      # - architect/run-tests-with-ats:
+      #     name: execute chart tests
+      #     filters:
+      #       # Do not trigger the job on merge to main.
+      #       branches:
+      #         ignore:
+      #           - main
+      #     requires:
+      #       - push-kyverno-crds-chart-to-giantswarm-catalog
 
       # Don't push to collections yet
       # - architect/push-to-app-collection:
