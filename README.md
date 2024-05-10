@@ -1,70 +1,78 @@
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/giantswarm/APP-NAME/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/giantswarm/APP-NAME/tree/main)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/giantswarm/kyverno-crds/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/giantswarm/kyverno-crds/tree/main)
 
-[Read me after cloning this template (GS staff only)](https://handbook.giantswarm.io/docs/dev-and-releng/app-developer-processes/adding_app_to_appcatalog/)
+# kyverno-crds chart
 
-# {APP-NAME} chart
+> [!WARNING]
+> The current version of the kyverno-crds App is meant to be run with Kyverno v1.12, which is currently not released as part of our Security platform yet.
 
-Giant Swarm offers a {APP-NAME} App which can be installed in workload clusters.
-Here we define the {APP-NAME} chart with its templates and default configuration.
+Giant Swarm offers a kyverno-crds App which can be installed in workload clusters.
 
-**What is this app?**
+The `kyverno-crds` App includes the necessary CRDs to run Kyverno in workload and managament clusters.
 
-**Why did we add it?**
+## CRDs included in the chart
 
-**Who can use it?**
-
-## Installing
-
-There are several ways to install this app onto a workload cluster.
-
-- [Using GitOps to instantiate the App](https://docs.giantswarm.io/advanced/gitops/apps/)
-- [Using our web interface](https://docs.giantswarm.io/platform-overview/web-interface/app-platform/#installing-an-app).
-- By creating an [App resource](https://docs.giantswarm.io/use-the-api/management-api/crd/apps.application.giantswarm.io/) in the management cluster as explained in [Getting started with App Platform](https://docs.giantswarm.io/getting-started/app-platform/).
-
-## Configuring
-
-### values.yaml
-
-**This is an example of a values file you could upload using our web interface.**
-
-```yaml
-# values.yaml
+The chart includes CRDs from the `kyverno.io`, `reports.kyverno.io` and `wgpolicyk8s.io` groups.
 
 ```
-
-### Sample App CR and ConfigMap for the management cluster
-
-If you have access to the Kubernetes API on the management cluster, you could create
-the App CR and ConfigMap directly.
-
-Here is an example that would install the app to
-workload cluster `abc12`:
-
-```yaml
-# appCR.yaml
-
+.
+├── kyverno.io
+│   ├── kyverno.io_admissionreports.yaml
+│   ├── kyverno.io_backgroundscanreports.yaml
+│   ├── kyverno.io_cleanuppolicies.yaml
+│   ├── kyverno.io_clusteradmissionreports.yaml
+│   ├── kyverno.io_clusterbackgroundscanreports.yaml
+│   ├── kyverno.io_clustercleanuppolicies.yaml
+│   ├── kyverno.io_clusterpolicies.yaml
+│   ├── kyverno.io_globalcontextentries.yaml
+│   ├── kyverno.io_policies.yaml
+│   ├── kyverno.io_policyexceptions.yaml
+│   └── kyverno.io_updaterequests.yaml
+├── reports.kyverno.io
+│   ├── reports.kyverno.io_clusterephemeralreports.yaml
+│   └── reports.kyverno.io_ephemeralreports.yaml
+└── wgpolicyk8s.io
+    ├── wgpolicyk8s.io_clusterpolicyreports.yaml
+    └── wgpolicyk8s.io_policyreports.yaml
 ```
 
+## Configuration
+
+You can configure the CRDs you want to install with the following values:
+
 ```yaml
-# user-values-configmap.yaml
+crds:
+    groups:
 
+    # -- Install CRDs in group `kyverno.io`
+    # -- This field can be overwritten by setting crds.labels in the parent chart
+    kyverno:
+        admissionreports: true
+        backgroundscanreports: true
+        cleanuppolicies: true
+        clusteradmissionreports: true
+        clusterbackgroundscanreports: true
+        clustercleanuppolicies: true
+        clusterpolicies: true
+        globalcontextentries: true
+        policies: true
+        policyexceptions: true
+        updaterequests: true
+
+    # -- Install CRDs in group `reports.kyverno.io`
+    # -- This field can be overwritten by setting crds.labels in the parent chart
+    reports:
+        clusterephemeralreports: true
+        ephemeralreports: true
+
+    # -- Install CRDs in group `wgpolicyk8s.io`
+    # -- This field can be overwritten by setting crds.labels in the parent chart
+    wgpolicyk8s:
+        clusterpolicyreports: true
+        policyreports: true
 ```
-
-See our [full reference on how to configure apps](https://docs.giantswarm.io/getting-started/app-platform/app-configuration/) for more details.
-
-## Compatibility
-
-This app has been tested to work with the following workload cluster release versions:
-
-- _add release version_
-
-## Limitations
-
-Some apps have restrictions on how they can be deployed.
-Not following these limitations will most likely result in a broken deployment.
-
-- _add limitation_
 
 ## Credit
 
-- {APP HELM REPOSITORY}
+- [`kyverno`][kyverno-upstream]
+
+[kyverno-upstream]: https://github.com/kyverno/kyverno
