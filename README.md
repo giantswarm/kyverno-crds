@@ -2,9 +2,6 @@
 
 # kyverno-crds chart
 
-> [!WARNING]
-> The current version of the kyverno-crds App is meant to be run with Kyverno v1.12, which is currently not released as part of our Security platform yet.
-
 Giant Swarm offers a kyverno-crds App which can be installed in workload clusters.
 
 The `kyverno-crds` App includes the necessary CRDs to run Kyverno in workload and managament clusters.
@@ -33,42 +30,6 @@ The chart includes CRDs from the `kyverno.io`, `reports.kyverno.io` and `wgpolic
 └── wgpolicyk8s.io
     ├── wgpolicyk8s.io_clusterpolicyreports.yaml
     └── wgpolicyk8s.io_policyreports.yaml
-```
-
-## Configuration
-
-You can configure the CRDs you want to install with the following values:
-
-```yaml
-crds:
-    groups:
-
-    # -- Install CRDs in group `kyverno.io`
-    # -- This field can be overwritten by setting crds.labels in the parent chart
-    kyverno:
-        admissionreports: true
-        backgroundscanreports: true
-        cleanuppolicies: true
-        clusteradmissionreports: true
-        clusterbackgroundscanreports: true
-        clustercleanuppolicies: true
-        clusterpolicies: true
-        globalcontextentries: true
-        policies: true
-        policyexceptions: true
-        updaterequests: true
-
-    # -- Install CRDs in group `reports.kyverno.io`
-    # -- This field can be overwritten by setting crds.labels in the parent chart
-    reports:
-        clusterephemeralreports: true
-        ephemeralreports: true
-
-    # -- Install CRDs in group `wgpolicyk8s.io`
-    # -- This field can be overwritten by setting crds.labels in the parent chart
-    wgpolicyk8s:
-        clusterpolicyreports: true
-        policyreports: true
 ```
 
 ## Credit
