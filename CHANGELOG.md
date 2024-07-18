@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.11.1] - 2024-07-18
+
 ### Changed
 
 - Removed unpopulated labels and fixed the team label.
@@ -17,5 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release of the Kyverno CRDs App for Kyverno v1.11.
 
-[Unreleased]: https://github.com/giantswarm/kyverno-crds/compare/v1.11.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kyverno-crds/compare/v1.11.1...HEAD
+[1.11.1]: https://github.com/giantswarm/kyverno-crds/compare/v1.11.0...v1.11.1
 [1.11.0]: https://github.com/giantswarm/kyverno-crds/releases/tag/v1.11.0
