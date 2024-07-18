@@ -26,6 +26,7 @@ Common labels
 */}}
 {{- define "labels.common" -}}
 {{ include "labels.selector" . }}
+application.giantswarm.io/team: shield
 helm.sh/chart: {{ include "chart" . | quote }}
 {{- end -}}
 
