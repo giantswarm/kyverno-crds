@@ -26,10 +26,6 @@ Common labels
 */}}
 {{- define "labels.common" -}}
 {{ include "labels.selector" . }}
-application.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-application.giantswarm.io/team: {{ index .Chart.Annotations "application.giantswarm.io/team" | quote }}
-giantswarm.io/managed-by: {{ .Release.Service | quote }}
-giantswarm.io/service-type: {{ .Values.serviceType | quote }}
 helm.sh/chart: {{ include "chart" . | quote }}
 {{- end -}}
 
