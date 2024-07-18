@@ -26,7 +26,7 @@ Common labels
 */}}
 {{- define "labels.common" -}}
 {{ include "labels.selector" . }}
-application.giantswarm.io/team: shield
+application.giantswarm.io/team: "shield"
 helm.sh/chart: {{ include "chart" . | quote }}
 {{- end -}}
 
@@ -34,4 +34,8 @@ helm.sh/chart: {{ include "chart" . | quote }}
 
 {{- define "kyverno.crds.labels" -}}
 {{ include "labels.common" . }}
+{{- end -}}
+
+{{- define "labels.dummy" -}}
+application.giantswarm.io/team: {{ index .Chart.Annotations "application.giantswarm.io/team" | quote }}
 {{- end -}}
