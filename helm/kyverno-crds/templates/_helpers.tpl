@@ -26,10 +26,7 @@ Common labels
 */}}
 {{- define "labels.common" -}}
 {{ include "labels.selector" . }}
-application.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-application.giantswarm.io/team: {{ index .Chart.Annotations "application.giantswarm.io/team" | quote }}
-giantswarm.io/managed-by: {{ .Release.Service | quote }}
-giantswarm.io/service-type: {{ .Values.serviceType | quote }}
+application.giantswarm.io/team: "shield"
 helm.sh/chart: {{ include "chart" . | quote }}
 {{- end -}}
 
@@ -37,4 +34,8 @@ helm.sh/chart: {{ include "chart" . | quote }}
 
 {{- define "kyverno.crds.labels" -}}
 {{ include "labels.common" . }}
+{{- end -}}
+
+{{- define "labels.dummy" -}}
+application.giantswarm.io/team: {{ index .Chart.Annotations "application.giantswarm.io/team" | quote }}
 {{- end -}}
