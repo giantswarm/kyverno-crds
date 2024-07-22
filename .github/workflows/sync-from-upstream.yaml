@@ -41,6 +41,7 @@ jobs:
   call-update-chart:
     uses: ./.github/workflows/zz_generated.update_chart.yaml
     needs: sync-app-kyverno-with-fork
+    secrets: inherit
     with:
       branch: 'main#update-chart'
   copy-kyverno-crds:
