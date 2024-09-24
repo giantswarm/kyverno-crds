@@ -2,10 +2,10 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: release v1.11.5 (#10211)...'
-      sha: c708a20600fb3db591918604a2d8b68e5fa94a77
+      commitTitle: release v1.12.5 (#10653)...
+      sha: b7fb616a6db3081a7c6d1d72d375819e777064ee
       tags:
-      - v1.11.5
+      - v1.12.5
     path: .
   path: helm/kyverno-crds/charts/crds
 kind: LockConfig
