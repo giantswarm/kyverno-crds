@@ -1262,7 +1262,7 @@ spec:
         required:
         - spec
         type: object
-    served: false
+    served: true
     storage: false
   - name: v2beta1
     schema:
