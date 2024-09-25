@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.0] - 2024-09-24
+
 ### Changed
 
 - Update Kyverno CRDs to Kyverno v1.12.
@@ -23,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release of the Kyverno CRDs App for Kyverno v1.11.
 
-[Unreleased]: https://github.com/giantswarm/kyverno-crds/compare/v1.11.1...HEAD
+[Unreleased]: https://github.com/giantswarm/kyverno-crds/compare/v1.12.0...HEAD
+[1.12.0]: https://github.com/giantswarm/kyverno-crds/compare/v1.11.1...v1.12.0
 [1.11.1]: https://github.com/giantswarm/kyverno-crds/compare/v1.11.0...v1.11.1
 [1.11.0]: https://github.com/giantswarm/kyverno-crds/releases/tag/v1.11.0
