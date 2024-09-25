@@ -1,6 +1,6 @@
 apiVersion: v2
 # Same version as Kyverno app
-appVersion: 1.11.5
+appVersion: 1.12.5
 name: kyverno-crds
 description: This app contains the Kyverno CRDs.
 home: https://github.com/giantswarm/kyverno-crds
