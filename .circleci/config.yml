@@ -2,7 +2,7 @@ version: 2.1
 orbs:
   # used by renovate
   # repo: giantswarm/architect-orb
-  architect: giantswarm/architect@5.8.0
+  architect: giantswarm/architect@5.10.0
 
 workflows:
   package-and-push-chart-on-tag:
