@@ -23,6 +23,7 @@ workflows:
             ignore:
             - main
             - master
+    
     - architect/push-to-app-catalog:
         context: architect
         executor: app-build-suite
@@ -35,6 +36,10 @@ workflows:
         filters:
           tags:
             only: /^v.*/
+          branches:
+            ignore:
+            - main
+            - master
 
       # Run app-test-suite tests.
       # - architect/run-tests-with-ats:
@@ -47,10 +52,6 @@ workflows:
       #     requires:
       #       - push-kyverno-crds-chart-to-giantswarm-catalog
 
-          branches:
-            ignore:
-            - main
-            - master
     - architect/push-to-app-collection:
         name: aws-app-collection
         context: architect
