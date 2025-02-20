@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Update Kyverno CRDs to Kyverno v1.13.
 - Fix Chart AppVersion.
 
 ## [1.12.0] - 2024-09-24
