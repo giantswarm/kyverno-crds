@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Update Kyverno CRDs to Kyverno 1.14.1.
+
 ## [1.13.1] - 2025-04-29
 
 ### Added
