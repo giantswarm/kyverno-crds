@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Update Kyverno CRDs to Kyverno 1.14.2.
+
+### Notes
+
+This release includes an upstream update. Please refer to the following Release Notes from upstream for the latest changes:
+
+- [1.14.0](https://github.com/kyverno/kyverno/releases/tag/v1.14.0)
+- [1.14.1](https://github.com/kyverno/kyverno/releases/tag/v1.14.1)
+- [1.14.2](https://github.com/kyverno/kyverno/releases/tag/v1.14.2)
+
 ## [1.13.1] - 2025-04-29
 
 ### Added

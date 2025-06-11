@@ -1,15 +1,13 @@
 apiVersion: v2
-# Same version as Kyverno app
-appVersion: 1.13.4
 name: kyverno-crds
 description: This app contains the Kyverno CRDs.
 home: https://github.com/giantswarm/kyverno-crds
 icon: https://s.giantswarm.io/app-icons/kyverno/1/light.svg
 sources:
   - https://github.com/kyverno/kyverno
-version: 1.13.1
+version: 1.14.2
 annotations:
   application.giantswarm.io/team: shield
 dependencies:
   - name: crds
-    version: 3.3.6
+    version: 3.4.2
