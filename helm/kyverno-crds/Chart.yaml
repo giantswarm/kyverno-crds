@@ -5,7 +5,7 @@ home: https://github.com/giantswarm/kyverno-crds
 icon: https://s.giantswarm.io/app-icons/kyverno/1/light.svg
 sources:
   - https://github.com/kyverno/kyverno
-version: 1.14.2
+version: 1.14.0
 annotations:
   application.giantswarm.io/team: shield
 dependencies:
