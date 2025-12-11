@@ -18,7 +18,7 @@ jobs:
       tag: ${{ steps.output_tag.outputs.tag }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - run: |
           # Get the last tag from fork repo
           KYVERNO_LAST_TAG=$(git ls-remote --tags --sort='v:refname' --refs $kyverno_fork_repo \
