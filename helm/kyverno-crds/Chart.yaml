@@ -10,4 +10,6 @@ annotations:
   application.giantswarm.io/team: shield
 dependencies:
   - name: crds
-    version: 3.6.3
+    version: 3.7.0
+  - name: kyverno-api
+    version: 0.0.0

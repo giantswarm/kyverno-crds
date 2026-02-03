@@ -1,28 +1,24 @@
-{{- if .Values.groups.policies.validatingpolicies }}
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    {{- include "kyverno.crds.labels" . | nindent 4 }}
+    {{- include "kyverno-api.labels" . | nindent 4 }}
   annotations:
-    {{- with .Values.annotations }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-    controller-gen.kubebuilder.io/version: v0.18.0
-  name: validatingpolicies.policies.kyverno.io
+    {{- include "kyverno-api.annotations" . | nindent 4 }}
+  name: namespacedimagevalidatingpolicies.policies.kyverno.io
 spec:
   group: policies.kyverno.io
   names:
     categories:
     - kyverno
-    kind: ValidatingPolicy
-    listKind: ValidatingPolicyList
-    plural: validatingpolicies
+    kind: NamespacedImageValidatingPolicy
+    listKind: NamespacedImageValidatingPolicyList
+    plural: namespacedimagevalidatingpolicies
     shortNames:
-    - vpol
-    singular: validatingpolicy
-  scope: Cluster
+    - nivpol
+    singular: namespacedimagevalidatingpolicy
+  scope: Namespaced
   versions:
   - additionalPrinterColumns:
     - jsonPath: .metadata.creationTimestamp
@@ -31,7 +27,7 @@ spec:
     - jsonPath: .status.conditionStatus.ready
       name: READY
       type: string
-    name: v1alpha1
+    name: v1
     schema:
       openAPIV3Schema:
         properties:
@@ -53,9 +49,309 @@ spec:
           metadata:
             type: object
           spec:
-            description: ValidatingPolicySpec is the specification of the desired
-              behavior of the ValidatingPolicy.
+            description: ImageValidatingPolicySpec is the specification of the desired
+              behavior of the ImageValidatingPolicy.
             properties:
+              attestations:
+                description: Attestations provides a list of image metadata to verify
+                items:
+                  description: Attestation defines the identification details of the  metadata
+                    that has to be verified
+                  properties:
+                    intoto:
+                      description: InToto defines the details of attestation attached
+                        using intoto format
+                      properties:
+                        type:
+                          description: Type defines the type of attestation contained
+                            within the statement.
+                          type: string
+                      required:
+                      - type
+                      type: object
+                    name:
+                      description: Name is the name for this attestation. It is used
+                        to refer to the attestation in verification
+                      type: string
+                    referrer:
+                      description: Referrer defines the details of attestation attached
+                        using OCI 1.1 format
+                      properties:
+                        type:
+                          description: Type defines the type of attestation attached
+                            to the image.
+                          type: string
+                      required:
+                      - type
+                      type: object
+                  required:
+                  - name
+                  type: object
+                type: array
+              attestors:
+                description: Attestors provides a list of trusted authorities.
+                items:
+                  description: Attestor is an identity that confirms or verifies the
+                    authenticity of an image or an attestation
+                  oneOf:
+                  - required:
+                    - cosign
+                  - required:
+                    - notary
+                  properties:
+                    cosign:
+                      description: Cosign defines attestor configuration for Cosign
+                        based signatures
+                      properties:
+                        annotations:
+                          additionalProperties:
+                            type: string
+                          description: |-
+                            Annotations are used for image verification.
+                            Every specified key-value pair must exist and match in the verified payload.
+                            The payload may contain other key-value pairs.
+                          type: object
+                        certificate:
+                          description: Certificate defines the configuration for local
+                            signature verification
+                          properties:
+                            cert:
+                              description: Certificate is the to the public certificate
+                                for local signature verification.
+                              oneOf:
+                              - required:
+                                - value
+                              - required:
+                                - expression
+                              properties:
+                                expression:
+                                  description: Expression defines the a CEL expression
+                                    input.
+                                  type: string
+                                value:
+                                  description: Value defines the raw string input.
+                                  type: string
+                              type: object
+                            certChain:
+                              description: |-
+                                CertificateChain is the list of CA certificates in PEM format which will be needed
+                                when building the certificate chain for the signing certificate. Must start with the
+                                parent intermediate CA certificate of the signing certificate and end with the root certificate
+                              oneOf:
+                              - required:
+                                - value
+                              - required:
+                                - expression
+                              properties:
+                                expression:
+                                  description: Expression defines the a CEL expression
+                                    input.
+                                  type: string
+                                value:
+                                  description: Value defines the raw string input.
+                                  type: string
+                              type: object
+                          type: object
+                        ctlog:
+                          description: CTLog sets the configuration to verify the
+                            authority against a Rekor instance.
+                          properties:
+                            ctLogPubKey:
+                              description: CTLogPubKey, if set, is used to validate
+                                SCTs against a custom source.
+                              type: string
+                            insecureIgnoreSCT:
+                              description: |-
+                                IgnoreSCT defines whether to use the Signed Certificate Timestamp (SCT) log to check for a certificate
+                                timestamp. Default is false. Set to true if this was opted out during signing.
+                              type: boolean
+                            insecureIgnoreTlog:
+                              description: InsecureIgnoreTlog skips transparency log
+                                verification.
+                              type: boolean
+                            rekorPubKey:
+                              description: |-
+                                RekorPubKey is an optional PEM-encoded public key to use for a custom Rekor.
+                                If set, this will be used to validate transparency log signatures from a custom Rekor.
+                              type: string
+                            tsaCertChain:
+                              description: |-
+                                TSACertChain, if set, is the PEM-encoded certificate chain file for the RFC3161 timestamp authority. Must
+                                contain the root CA certificate. Optionally may contain intermediate CA certificates, and
+                                may contain the leaf TSA certificate if not present in the timestamurce.
+                              type: string
+                            url:
+                              description: URL sets the url to the rekor instance
+                                (by default the public rekor.sigstore.dev)
+                              type: string
+                          type: object
+                        key:
+                          description: Key defines the type of key to validate the
+                            image.
+                          properties:
+                            data:
+                              description: Data contains the inline public key
+                              type: string
+                            expression:
+                              description: Expression is a Expression expression that
+                                returns the public key.
+                              type: string
+                            hashAlgorithm:
+                              description: |-
+                                HashAlgorithm specifues signature algorithm for public keys. Supported values are
+                                sha224, sha256, sha384 and sha512. Defaults to sha256.
+                              type: string
+                            kms:
+                              description: |-
+                                KMS contains the KMS url of the public key
+                                Supported formats differ based on the KMS system used.
+                              type: string
+                          type: object
+                        keyless:
+                          description: Keyless sets the configuration to verify the
+                            authority against a Fulcio instance.
+                          properties:
+                            identities:
+                              description: Identities sets a list of identities.
+                              items:
+                                description: |-
+                                  Identity may contain the issuer and/or the subject found in the transparency
+                                  log.
+                                  Issuer/Subject uses a strict match, while IssuerRegExp and SubjectRegExp
+                                  apply a regexp for matching.
+                                properties:
+                                  issuer:
+                                    description: Issuer defines the issuer for this
+                                      identity.
+                                    type: string
+                                  issuerRegExp:
+                                    description: IssuerRegExp specifies a regular
+                                      expression to match the issuer for this identity.
+                                    type: string
+                                  subject:
+                                    description: Subject defines the subject for this
+                                      identity.
+                                    type: string
+                                  subjectRegExp:
+                                    description: SubjectRegExp specifies a regular
+                                      expression to match the subject for this identity.
+                                    type: string
+                                type: object
+                              type: array
+                            roots:
+                              description: |-
+                                Roots is an optional set of PEM encoded trusted root certificates.
+                                If not provided, the system roots are used.
+                              type: string
+                          required:
+                          - identities
+                          type: object
+                        source:
+                          description: Sources sets the configuration to specify the
+                            sources from where to consume the signature and attestations.
+                          properties:
+                            PullSecrets:
+                              description: |-
+                                SignaturePullSecrets is an optional list of references to secrets in the
+                                same namespace as the deploying resource for pulling any of the signatures
+                                used by this Source.
+                              items:
+                                description: |-
+                                  LocalObjectReference contains enough information to let you locate the
+                                  referenced object inside the same namespace.
+                                properties:
+                                  name:
+                                    default: ""
+                                    description: |-
+                                      Name of the referent.
+                                      This field is effectively required, but due to backwards compatibility is
+                                      allowed to be empty. Instances of this type with an empty value here are
+                                      almost certainly wrong.
+                                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    type: string
+                                type: object
+                                x-kubernetes-map-type: atomic
+                              type: array
+                            repository:
+                              description: Repository defines the location from where
+                                to pull the signature / attestations.
+                              type: string
+                            tagPrefix:
+                              description: |-
+                                TagPrefix is an optional prefix that signature and attestations have.
+                                This is the 'tag based discovery' and in the future once references are
+                                fully supported that should likely be the preferred way to handle these.
+                              type: string
+                          type: object
+                        tuf:
+                          description: TUF defines the configuration to fetch sigstore
+                            root
+                          properties:
+                            mirror:
+                              description: Mirror is the base URL of Sigstore TUF
+                                repository
+                              type: string
+                            root:
+                              description: Root defines the path or data of the trusted
+                                root
+                              properties:
+                                data:
+                                  description: Data is the base64 encoded TUF root
+                                  type: string
+                                path:
+                                  description: Path is the URL or File location of
+                                    the TUF root
+                                  type: string
+                              type: object
+                          type: object
+                      type: object
+                    name:
+                      description: Name is the name for this attestor. It is used
+                        to refer to the attestor in verification
+                      type: string
+                    notary:
+                      description: Notary defines attestor configuration for Notary
+                        based signatures
+                      properties:
+                        certs:
+                          description: Certs define the cert chain for Notary signature
+                            verification
+                          oneOf:
+                          - required:
+                            - value
+                          - required:
+                            - expression
+                          properties:
+                            expression:
+                              description: Expression defines the a CEL expression
+                                input.
+                              type: string
+                            value:
+                              description: Value defines the raw string input.
+                              type: string
+                          type: object
+                        tsaCerts:
+                          description: TSACerts define the cert chain for verifying
+                            timestamps of notary signature
+                          oneOf:
+                          - required:
+                            - value
+                          - required:
+                            - expression
+                          properties:
+                            expression:
+                              description: Expression defines the a CEL expression
+                                input.
+                              type: string
+                            value:
+                              description: Value defines the raw string input.
+                              type: string
+                          type: object
+                      type: object
+                  required:
+                  - name
+                  type: object
+                type: array
               auditAnnotations:
                 description: |-
                   auditAnnotations contains CEL expressions which are used to produce audit
@@ -121,16 +417,37 @@ spec:
                           type: string
                         type: array
                     type: object
-                  validatingAdmissionPolicy:
-                    description: ValidatingAdmissionPolicy specifies whether to generate
-                      a Kubernetes ValidatingAdmissionPolicy.
-                    properties:
-                      enabled:
-                        description: |-
-                          Enabled specifies whether to generate a Kubernetes ValidatingAdmissionPolicy.
-                          Optional. Defaults to "false" if not specified.
-                        type: boolean
-                    type: object
+                type: object
+              credentials:
+                description: Credentials provides credentials that will be used for
+                  authentication with registry.
+                properties:
+                  allowInsecureRegistry:
+                    description: AllowInsecureRegistry allows insecure access to a
+                      registry.
+                    type: boolean
+                  providers:
+                    description: |-
+                      Providers specifies a list of OCI Registry names, whose authentication providers are provided.
+                      It can be of one of these values: default,google,azure,amazon,github.
+                    items:
+                      description: CredentialsProvidersType provides the list of credential
+                        providers required.
+                      enum:
+                      - default
+                      - amazon
+                      - azure
+                      - google
+                      - github
+                      type: string
+                    type: array
+                  secrets:
+                    description: |-
+                      Secrets specifies a list of secrets that are provided for credentials.
+                      Secrets must live in the Kyverno namespace.
+                    items:
+                      type: string
+                    type: array
                 type: object
               evaluation:
                 description: EvaluationConfiguration defines the configuration for
@@ -167,32 +484,37 @@ spec:
                 type: object
               failurePolicy:
                 description: |-
-                  failurePolicy defines how to handle failures for the admission policy. Failures can
+                  FailurePolicy defines how to handle failures for the admission policy. Failures can
                   occur from CEL expression parse errors, type check errors, runtime errors and invalid
                   or mis-configured policy definitions or bindings.
-
-                  failurePolicy does not define how validations that evaluate to false are handled.
-
-                  When failurePolicy is set to Fail, the validationActions field define how failures are enforced.
-
-                  Allowed values are Ignore or Fail. Defaults to Fail.
                 enum:
                 - Ignore
                 - Fail
                 type: string
+              images:
+                description: ImageExtractors is a list of CEL expression to extract
+                  images from the resource
+                items:
+                  properties:
+                    expression:
+                      description: Expression defines CEL expression to extract images
+                        from the resource.
+                      type: string
+                    name:
+                      description: Name is the name for this imageList. It is used
+                        to refer to the images in verification block as images.<name>
+                      type: string
+                  required:
+                  - expression
+                  - name
+                  type: object
+                type: array
               matchConditions:
                 description: |-
                   MatchConditions is a list of conditions that must be met for a request to be validated.
                   Match conditions filter requests that have already been matched by the rules,
                   namespaceSelector, and objectSelector. An empty list of matchConditions matches all requests.
                   There are a maximum of 64 match conditions allowed.
-
-                  The exact matching logic is (in order):
-                    1. If ANY matchCondition evaluates to FALSE, the policy is skipped.
-                    2. If ALL matchConditions evaluate to TRUE, the policy is evaluated.
-                    3. If any matchCondition evaluates to an error (but none are FALSE):
-                       - If failurePolicy=Fail, reject the request
-                       - If failurePolicy=Ignore, the policy is skipped
                 items:
                   description: MatchCondition represents a condition which must by
                     fulfilled for a request to be sent to a webhook.
@@ -230,14 +552,9 @@ spec:
                   - name
                   type: object
                 type: array
-                x-kubernetes-list-map-keys:
-                - name
-                x-kubernetes-list-type: map
               matchConstraints:
-                description: |-
-                  MatchConstraints specifies what resources this policy is designed to validate.
-                  The AdmissionPolicy cares about a request if it matches _all_ Constraints.
-                  Required.
+                description: MatchConstraints specifies what resources this policy
+                  is designed to validate.
                 properties:
                   excludeResourceRules:
                     description: |-
@@ -568,6 +885,30 @@ spec:
                     x-kubernetes-list-type: atomic
                 type: object
                 x-kubernetes-map-type: atomic
+              matchImageReferences:
+                description: |-
+                  MatchImageReferences is a list of Glob and CELExpressions to match images.
+                  Any image that matches one of the rules is considered for validation
+                  Any image that does not match a rule is skipped, even when they are passed as arguments to
+                  image verification functions
+                items:
+                  description: MatchImageReference defines a Glob or a CEL expression
+                    for matching images
+                  oneOf:
+                  - required:
+                    - glob
+                  - required:
+                    - expression
+                  properties:
+                    expression:
+                      description: Expression defines CEL Expressions for matching
+                        images
+                      type: string
+                    glob:
+                      description: Glob defines a globbing pattern for matching images
+                      type: string
+                  type: object
+                type: array
               validationActions:
                 description: |-
                   ValidationAction specifies the action to be taken when the matched resource violates the policy.
@@ -607,11 +948,31 @@ spec:
                   type: string
                 type: array
                 x-kubernetes-list-type: set
+              validationConfigurations:
+                default: {}
+                description: ValidationConfigurations defines settings for mutating
+                  and verifying image digests, and enforcing image verification through
+                  signatures.
+                properties:
+                  mutateDigest:
+                    default: true
+                    description: |-
+                      MutateDigest enables replacement of image tags with digests.
+                      Defaults to true.
+                    type: boolean
+                  required:
+                    default: true
+                    description: Required validates that images are verified, i.e.,
+                      have passed a signature or attestation check.
+                    type: boolean
+                  verifyDigest:
+                    default: true
+                    description: VerifyDigest validates that images have a digest.
+                    type: boolean
+                type: object
               validations:
-                description: |-
-                  Validations contain CEL expressions which is used to apply the validation.
-                  Validations and AuditAnnotations may not both be empty; a minimum of one Validations or AuditAnnotations is
-                  required.
+                description: Validations contain CEL expressions which is used to
+                  apply the image validation checks.
                 items:
                   description: Validation specifies the CEL expression which is used
                     to apply the validation.
@@ -708,11 +1069,6 @@ spec:
                 description: |-
                   Variables contain definitions of variables that can be used in composition of other expressions.
                   Each variable is defined as a named CEL expression.
-                  The variables defined here will be available under `variables` in other expressions of the policy
-                  except MatchConditions because MatchConditions are evaluated before the rest of the policy.
-
-                  The expression of a variable can refer to other variables defined earlier in the list but not those after.
-                  Thus, Variables must be sorted by the order of first appearance and acyclic.
                 items:
                   description: Variable is the definition of a variable that is used
                     for composition. A variable is defined as a named expression.
@@ -734,9 +1090,6 @@ spec:
                   type: object
                   x-kubernetes-map-type: atomic
                 type: array
-                x-kubernetes-list-map-keys:
-                - name
-                x-kubernetes-list-type: map
               webhookConfiguration:
                 description: WebhookConfiguration defines the configuration for the
                   webhook.
@@ -749,6 +1102,9 @@ spec:
                     format: int32
                     type: integer
                 type: object
+            required:
+            - attestors
+            - validations
             type: object
           status:
             description: Status contains policy runtime data.
@@ -759,9 +1115,323 @@ spec:
                     additionalProperties:
                       properties:
                         spec:
-                          description: ValidatingPolicySpec is the specification of
-                            the desired behavior of the ValidatingPolicy.
+                          description: ImageValidatingPolicySpec is the specification
+                            of the desired behavior of the ImageValidatingPolicy.
                           properties:
+                            attestations:
+                              description: Attestations provides a list of image metadata
+                                to verify
+                              items:
+                                description: Attestation defines the identification
+                                  details of the  metadata that has to be verified
+                                properties:
+                                  intoto:
+                                    description: InToto defines the details of attestation
+                                      attached using intoto format
+                                    properties:
+                                      type:
+                                        description: Type defines the type of attestation
+                                          contained within the statement.
+                                        type: string
+                                    required:
+                                    - type
+                                    type: object
+                                  name:
+                                    description: Name is the name for this attestation.
+                                      It is used to refer to the attestation in verification
+                                    type: string
+                                  referrer:
+                                    description: Referrer defines the details of attestation
+                                      attached using OCI 1.1 format
+                                    properties:
+                                      type:
+                                        description: Type defines the type of attestation
+                                          attached to the image.
+                                        type: string
+                                    required:
+                                    - type
+                                    type: object
+                                required:
+                                - name
+                                type: object
+                              type: array
+                            attestors:
+                              description: Attestors provides a list of trusted authorities.
+                              items:
+                                description: Attestor is an identity that confirms
+                                  or verifies the authenticity of an image or an attestation
+                                oneOf:
+                                - required:
+                                  - cosign
+                                - required:
+                                  - notary
+                                properties:
+                                  cosign:
+                                    description: Cosign defines attestor configuration
+                                      for Cosign based signatures
+                                    properties:
+                                      annotations:
+                                        additionalProperties:
+                                          type: string
+                                        description: |-
+                                          Annotations are used for image verification.
+                                          Every specified key-value pair must exist and match in the verified payload.
+                                          The payload may contain other key-value pairs.
+                                        type: object
+                                      certificate:
+                                        description: Certificate defines the configuration
+                                          for local signature verification
+                                        properties:
+                                          cert:
+                                            description: Certificate is the to the
+                                              public certificate for local signature
+                                              verification.
+                                            oneOf:
+                                            - required:
+                                              - value
+                                            - required:
+                                              - expression
+                                            properties:
+                                              expression:
+                                                description: Expression defines the
+                                                  a CEL expression input.
+                                                type: string
+                                              value:
+                                                description: Value defines the raw
+                                                  string input.
+                                                type: string
+                                            type: object
+                                          certChain:
+                                            description: |-
+                                              CertificateChain is the list of CA certificates in PEM format which will be needed
+                                              when building the certificate chain for the signing certificate. Must start with the
+                                              parent intermediate CA certificate of the signing certificate and end with the root certificate
+                                            oneOf:
+                                            - required:
+                                              - value
+                                            - required:
+                                              - expression
+                                            properties:
+                                              expression:
+                                                description: Expression defines the
+                                                  a CEL expression input.
+                                                type: string
+                                              value:
+                                                description: Value defines the raw
+                                                  string input.
+                                                type: string
+                                            type: object
+                                        type: object
+                                      ctlog:
+                                        description: CTLog sets the configuration
+                                          to verify the authority against a Rekor
+                                          instance.
+                                        properties:
+                                          ctLogPubKey:
+                                            description: CTLogPubKey, if set, is used
+                                              to validate SCTs against a custom source.
+                                            type: string
+                                          insecureIgnoreSCT:
+                                            description: |-
+                                              IgnoreSCT defines whether to use the Signed Certificate Timestamp (SCT) log to check for a certificate
+                                              timestamp. Default is false. Set to true if this was opted out during signing.
+                                            type: boolean
+                                          insecureIgnoreTlog:
+                                            description: InsecureIgnoreTlog skips
+                                              transparency log verification.
+                                            type: boolean
+                                          rekorPubKey:
+                                            description: |-
+                                              RekorPubKey is an optional PEM-encoded public key to use for a custom Rekor.
+                                              If set, this will be used to validate transparency log signatures from a custom Rekor.
+                                            type: string
+                                          tsaCertChain:
+                                            description: |-
+                                              TSACertChain, if set, is the PEM-encoded certificate chain file for the RFC3161 timestamp authority. Must
+                                              contain the root CA certificate. Optionally may contain intermediate CA certificates, and
+                                              may contain the leaf TSA certificate if not present in the timestamurce.
+                                            type: string
+                                          url:
+                                            description: URL sets the url to the rekor
+                                              instance (by default the public rekor.sigstore.dev)
+                                            type: string
+                                        type: object
+                                      key:
+                                        description: Key defines the type of key to
+                                          validate the image.
+                                        properties:
+                                          data:
+                                            description: Data contains the inline
+                                              public key
+                                            type: string
+                                          expression:
+                                            description: Expression is a Expression
+                                              expression that returns the public key.
+                                            type: string
+                                          hashAlgorithm:
+                                            description: |-
+                                              HashAlgorithm specifues signature algorithm for public keys. Supported values are
+                                              sha224, sha256, sha384 and sha512. Defaults to sha256.
+                                            type: string
+                                          kms:
+                                            description: |-
+                                              KMS contains the KMS url of the public key
+                                              Supported formats differ based on the KMS system used.
+                                            type: string
+                                        type: object
+                                      keyless:
+                                        description: Keyless sets the configuration
+                                          to verify the authority against a Fulcio
+                                          instance.
+                                        properties:
+                                          identities:
+                                            description: Identities sets a list of
+                                              identities.
+                                            items:
+                                              description: |-
+                                                Identity may contain the issuer and/or the subject found in the transparency
+                                                log.
+                                                Issuer/Subject uses a strict match, while IssuerRegExp and SubjectRegExp
+                                                apply a regexp for matching.
+                                              properties:
+                                                issuer:
+                                                  description: Issuer defines the
+                                                    issuer for this identity.
+                                                  type: string
+                                                issuerRegExp:
+                                                  description: IssuerRegExp specifies
+                                                    a regular expression to match
+                                                    the issuer for this identity.
+                                                  type: string
+                                                subject:
+                                                  description: Subject defines the
+                                                    subject for this identity.
+                                                  type: string
+                                                subjectRegExp:
+                                                  description: SubjectRegExp specifies
+                                                    a regular expression to match
+                                                    the subject for this identity.
+                                                  type: string
+                                              type: object
+                                            type: array
+                                          roots:
+                                            description: |-
+                                              Roots is an optional set of PEM encoded trusted root certificates.
+                                              If not provided, the system roots are used.
+                                            type: string
+                                        required:
+                                        - identities
+                                        type: object
+                                      source:
+                                        description: Sources sets the configuration
+                                          to specify the sources from where to consume
+                                          the signature and attestations.
+                                        properties:
+                                          PullSecrets:
+                                            description: |-
+                                              SignaturePullSecrets is an optional list of references to secrets in the
+                                              same namespace as the deploying resource for pulling any of the signatures
+                                              used by this Source.
+                                            items:
+                                              description: |-
+                                                LocalObjectReference contains enough information to let you locate the
+                                                referenced object inside the same namespace.
+                                              properties:
+                                                name:
+                                                  default: ""
+                                                  description: |-
+                                                    Name of the referent.
+                                                    This field is effectively required, but due to backwards compatibility is
+                                                    allowed to be empty. Instances of this type with an empty value here are
+                                                    almost certainly wrong.
+                                                    More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                                  type: string
+                                              type: object
+                                              x-kubernetes-map-type: atomic
+                                            type: array
+                                          repository:
+                                            description: Repository defines the location
+                                              from where to pull the signature / attestations.
+                                            type: string
+                                          tagPrefix:
+                                            description: |-
+                                              TagPrefix is an optional prefix that signature and attestations have.
+                                              This is the 'tag based discovery' and in the future once references are
+                                              fully supported that should likely be the preferred way to handle these.
+                                            type: string
+                                        type: object
+                                      tuf:
+                                        description: TUF defines the configuration
+                                          to fetch sigstore root
+                                        properties:
+                                          mirror:
+                                            description: Mirror is the base URL of
+                                              Sigstore TUF repository
+                                            type: string
+                                          root:
+                                            description: Root defines the path or
+                                              data of the trusted root
+                                            properties:
+                                              data:
+                                                description: Data is the base64 encoded
+                                                  TUF root
+                                                type: string
+                                              path:
+                                                description: Path is the URL or File
+                                                  location of the TUF root
+                                                type: string
+                                            type: object
+                                        type: object
+                                    type: object
+                                  name:
+                                    description: Name is the name for this attestor.
+                                      It is used to refer to the attestor in verification
+                                    type: string
+                                  notary:
+                                    description: Notary defines attestor configuration
+                                      for Notary based signatures
+                                    properties:
+                                      certs:
+                                        description: Certs define the cert chain for
+                                          Notary signature verification
+                                        oneOf:
+                                        - required:
+                                          - value
+                                        - required:
+                                          - expression
+                                        properties:
+                                          expression:
+                                            description: Expression defines the a
+                                              CEL expression input.
+                                            type: string
+                                          value:
+                                            description: Value defines the raw string
+                                              input.
+                                            type: string
+                                        type: object
+                                      tsaCerts:
+                                        description: TSACerts define the cert chain
+                                          for verifying timestamps of notary signature
+                                        oneOf:
+                                        - required:
+                                          - value
+                                        - required:
+                                          - expression
+                                        properties:
+                                          expression:
+                                            description: Expression defines the a
+                                              CEL expression input.
+                                            type: string
+                                          value:
+                                            description: Value defines the raw string
+                                              input.
+                                            type: string
+                                        type: object
+                                    type: object
+                                required:
+                                - name
+                                type: object
+                              type: array
                             auditAnnotations:
                               description: |-
                                 auditAnnotations contains CEL expressions which are used to produce audit
@@ -827,16 +1497,37 @@ spec:
                                         type: string
                                       type: array
                                   type: object
-                                validatingAdmissionPolicy:
-                                  description: ValidatingAdmissionPolicy specifies
-                                    whether to generate a Kubernetes ValidatingAdmissionPolicy.
-                                  properties:
-                                    enabled:
-                                      description: |-
-                                        Enabled specifies whether to generate a Kubernetes ValidatingAdmissionPolicy.
-                                        Optional. Defaults to "false" if not specified.
-                                      type: boolean
-                                  type: object
+                              type: object
+                            credentials:
+                              description: Credentials provides credentials that will
+                                be used for authentication with registry.
+                              properties:
+                                allowInsecureRegistry:
+                                  description: AllowInsecureRegistry allows insecure
+                                    access to a registry.
+                                  type: boolean
+                                providers:
+                                  description: |-
+                                    Providers specifies a list of OCI Registry names, whose authentication providers are provided.
+                                    It can be of one of these values: default,google,azure,amazon,github.
+                                  items:
+                                    description: CredentialsProvidersType provides
+                                      the list of credential providers required.
+                                    enum:
+                                    - default
+                                    - amazon
+                                    - azure
+                                    - google
+                                    - github
+                                    type: string
+                                  type: array
+                                secrets:
+                                  description: |-
+                                    Secrets specifies a list of secrets that are provided for credentials.
+                                    Secrets must live in the Kyverno namespace.
+                                  items:
+                                    type: string
+                                  type: array
                               type: object
                             evaluation:
                               description: EvaluationConfiguration defines the configuration
@@ -874,32 +1565,38 @@ spec:
                               type: object
                             failurePolicy:
                               description: |-
-                                failurePolicy defines how to handle failures for the admission policy. Failures can
+                                FailurePolicy defines how to handle failures for the admission policy. Failures can
                                 occur from CEL expression parse errors, type check errors, runtime errors and invalid
                                 or mis-configured policy definitions or bindings.
-
-                                failurePolicy does not define how validations that evaluate to false are handled.
-
-                                When failurePolicy is set to Fail, the validationActions field define how failures are enforced.
-
-                                Allowed values are Ignore or Fail. Defaults to Fail.
                               enum:
                               - Ignore
                               - Fail
                               type: string
+                            images:
+                              description: ImageExtractors is a list of CEL expression
+                                to extract images from the resource
+                              items:
+                                properties:
+                                  expression:
+                                    description: Expression defines CEL expression
+                                      to extract images from the resource.
+                                    type: string
+                                  name:
+                                    description: Name is the name for this imageList.
+                                      It is used to refer to the images in verification
+                                      block as images.<name>
+                                    type: string
+                                required:
+                                - expression
+                                - name
+                                type: object
+                              type: array
                             matchConditions:
                               description: |-
                                 MatchConditions is a list of conditions that must be met for a request to be validated.
                                 Match conditions filter requests that have already been matched by the rules,
                                 namespaceSelector, and objectSelector. An empty list of matchConditions matches all requests.
                                 There are a maximum of 64 match conditions allowed.
-
-                                The exact matching logic is (in order):
-                                  1. If ANY matchCondition evaluates to FALSE, the policy is skipped.
-                                  2. If ALL matchConditions evaluate to TRUE, the policy is evaluated.
-                                  3. If any matchCondition evaluates to an error (but none are FALSE):
-                                     - If failurePolicy=Fail, reject the request
-                                     - If failurePolicy=Ignore, the policy is skipped
                               items:
                                 description: MatchCondition represents a condition
                                   which must by fulfilled for a request to be sent
@@ -938,14 +1635,9 @@ spec:
                                 - name
                                 type: object
                               type: array
-                              x-kubernetes-list-map-keys:
-                              - name
-                              x-kubernetes-list-type: map
                             matchConstraints:
-                              description: |-
-                                MatchConstraints specifies what resources this policy is designed to validate.
-                                The AdmissionPolicy cares about a request if it matches _all_ Constraints.
-                                Required.
+                              description: MatchConstraints specifies what resources
+                                this policy is designed to validate.
                               properties:
                                 excludeResourceRules:
                                   description: |-
@@ -1280,6 +1972,31 @@ spec:
                                   x-kubernetes-list-type: atomic
                               type: object
                               x-kubernetes-map-type: atomic
+                            matchImageReferences:
+                              description: |-
+                                MatchImageReferences is a list of Glob and CELExpressions to match images.
+                                Any image that matches one of the rules is considered for validation
+                                Any image that does not match a rule is skipped, even when they are passed as arguments to
+                                image verification functions
+                              items:
+                                description: MatchImageReference defines a Glob or
+                                  a CEL expression for matching images
+                                oneOf:
+                                - required:
+                                  - glob
+                                - required:
+                                  - expression
+                                properties:
+                                  expression:
+                                    description: Expression defines CEL Expressions
+                                      for matching images
+                                    type: string
+                                  glob:
+                                    description: Glob defines a globbing pattern for
+                                      matching images
+                                    type: string
+                                type: object
+                              type: array
                             validationActions:
                               description: |-
                                 ValidationAction specifies the action to be taken when the matched resource violates the policy.
@@ -1320,11 +2037,33 @@ spec:
                                 type: string
                               type: array
                               x-kubernetes-list-type: set
+                            validationConfigurations:
+                              default: {}
+                              description: ValidationConfigurations defines settings
+                                for mutating and verifying image digests, and enforcing
+                                image verification through signatures.
+                              properties:
+                                mutateDigest:
+                                  default: true
+                                  description: |-
+                                    MutateDigest enables replacement of image tags with digests.
+                                    Defaults to true.
+                                  type: boolean
+                                required:
+                                  default: true
+                                  description: Required validates that images are
+                                    verified, i.e., have passed a signature or attestation
+                                    check.
+                                  type: boolean
+                                verifyDigest:
+                                  default: true
+                                  description: VerifyDigest validates that images
+                                    have a digest.
+                                  type: boolean
+                              type: object
                             validations:
-                              description: |-
-                                Validations contain CEL expressions which is used to apply the validation.
-                                Validations and AuditAnnotations may not both be empty; a minimum of one Validations or AuditAnnotations is
-                                required.
+                              description: Validations contain CEL expressions which
+                                is used to apply the image validation checks.
                               items:
                                 description: Validation specifies the CEL expression
                                   which is used to apply the validation.
@@ -1434,11 +2173,6 @@ spec:
                               description: |-
                                 Variables contain definitions of variables that can be used in composition of other expressions.
                                 Each variable is defined as a named CEL expression.
-                                The variables defined here will be available under `variables` in other expressions of the policy
-                                except MatchConditions because MatchConditions are evaluated before the rest of the policy.
-
-                                The expression of a variable can refer to other variables defined earlier in the list but not those after.
-                                Thus, Variables must be sorted by the order of first appearance and acyclic.
                               items:
                                 description: Variable is the definition of a variable
                                   that is used for composition. A variable is defined
@@ -1461,9 +2195,6 @@ spec:
                                 type: object
                                 x-kubernetes-map-type: atomic
                               type: array
-                              x-kubernetes-list-map-keys:
-                              - name
-                              x-kubernetes-list-type: map
                             webhookConfiguration:
                               description: WebhookConfiguration defines the configuration
                                 for the webhook.
@@ -1476,6 +2207,9 @@ spec:
                                   format: int32
                                   type: integer
                               type: object
+                          required:
+                          - attestors
+                          - validations
                           type: object
                         targets:
                           items:
@@ -1572,18 +2306,12 @@ spec:
                       The conditions array, the reason and message fields contain more detail about the policy's status.
                     type: boolean
                 type: object
-              generated:
-                description: Generated indicates whether a ValidatingAdmissionPolicy/MutatingAdmissionPolicy
-                  is generated from the policy or not
-                type: boolean
             type: object
         required:
         - spec
         type: object
-    selectableFields:
-    - jsonPath: .spec.evaluation.mode
     served: true
-    storage: true
+    storage: false
     subresources:
       status: {}
   - additionalPrinterColumns:
@@ -1615,9 +2343,309 @@ spec:
           metadata:
             type: object
           spec:
-            description: ValidatingPolicySpec is the specification of the desired
-              behavior of the ValidatingPolicy.
+            description: ImageValidatingPolicySpec is the specification of the desired
+              behavior of the ImageValidatingPolicy.
             properties:
+              attestations:
+                description: Attestations provides a list of image metadata to verify
+                items:
+                  description: Attestation defines the identification details of the  metadata
+                    that has to be verified
+                  properties:
+                    intoto:
+                      description: InToto defines the details of attestation attached
+                        using intoto format
+                      properties:
+                        type:
+                          description: Type defines the type of attestation contained
+                            within the statement.
+                          type: string
+                      required:
+                      - type
+                      type: object
+                    name:
+                      description: Name is the name for this attestation. It is used
+                        to refer to the attestation in verification
+                      type: string
+                    referrer:
+                      description: Referrer defines the details of attestation attached
+                        using OCI 1.1 format
+                      properties:
+                        type:
+                          description: Type defines the type of attestation attached
+                            to the image.
+                          type: string
+                      required:
+                      - type
+                      type: object
+                  required:
+                  - name
+                  type: object
+                type: array
+              attestors:
+                description: Attestors provides a list of trusted authorities.
+                items:
+                  description: Attestor is an identity that confirms or verifies the
+                    authenticity of an image or an attestation
+                  oneOf:
+                  - required:
+                    - cosign
+                  - required:
+                    - notary
+                  properties:
+                    cosign:
+                      description: Cosign defines attestor configuration for Cosign
+                        based signatures
+                      properties:
+                        annotations:
+                          additionalProperties:
+                            type: string
+                          description: |-
+                            Annotations are used for image verification.
+                            Every specified key-value pair must exist and match in the verified payload.
+                            The payload may contain other key-value pairs.
+                          type: object
+                        certificate:
+                          description: Certificate defines the configuration for local
+                            signature verification
+                          properties:
+                            cert:
+                              description: Certificate is the to the public certificate
+                                for local signature verification.
+                              oneOf:
+                              - required:
+                                - value
+                              - required:
+                                - expression
+                              properties:
+                                expression:
+                                  description: Expression defines the a CEL expression
+                                    input.
+                                  type: string
+                                value:
+                                  description: Value defines the raw string input.
+                                  type: string
+                              type: object
+                            certChain:
+                              description: |-
+                                CertificateChain is the list of CA certificates in PEM format which will be needed
+                                when building the certificate chain for the signing certificate. Must start with the
+                                parent intermediate CA certificate of the signing certificate and end with the root certificate
+                              oneOf:
+                              - required:
+                                - value
+                              - required:
+                                - expression
+                              properties:
+                                expression:
+                                  description: Expression defines the a CEL expression
+                                    input.
+                                  type: string
+                                value:
+                                  description: Value defines the raw string input.
+                                  type: string
+                              type: object
+                          type: object
+                        ctlog:
+                          description: CTLog sets the configuration to verify the
+                            authority against a Rekor instance.
+                          properties:
+                            ctLogPubKey:
+                              description: CTLogPubKey, if set, is used to validate
+                                SCTs against a custom source.
+                              type: string
+                            insecureIgnoreSCT:
+                              description: |-
+                                IgnoreSCT defines whether to use the Signed Certificate Timestamp (SCT) log to check for a certificate
+                                timestamp. Default is false. Set to true if this was opted out during signing.
+                              type: boolean
+                            insecureIgnoreTlog:
+                              description: InsecureIgnoreTlog skips transparency log
+                                verification.
+                              type: boolean
+                            rekorPubKey:
+                              description: |-
+                                RekorPubKey is an optional PEM-encoded public key to use for a custom Rekor.
+                                If set, this will be used to validate transparency log signatures from a custom Rekor.
+                              type: string
+                            tsaCertChain:
+                              description: |-
+                                TSACertChain, if set, is the PEM-encoded certificate chain file for the RFC3161 timestamp authority. Must
+                                contain the root CA certificate. Optionally may contain intermediate CA certificates, and
+                                may contain the leaf TSA certificate if not present in the timestamurce.
+                              type: string
+                            url:
+                              description: URL sets the url to the rekor instance
+                                (by default the public rekor.sigstore.dev)
+                              type: string
+                          type: object
+                        key:
+                          description: Key defines the type of key to validate the
+                            image.
+                          properties:
+                            data:
+                              description: Data contains the inline public key
+                              type: string
+                            expression:
+                              description: Expression is a Expression expression that
+                                returns the public key.
+                              type: string
+                            hashAlgorithm:
+                              description: |-
+                                HashAlgorithm specifues signature algorithm for public keys. Supported values are
+                                sha224, sha256, sha384 and sha512. Defaults to sha256.
+                              type: string
+                            kms:
+                              description: |-
+                                KMS contains the KMS url of the public key
+                                Supported formats differ based on the KMS system used.
+                              type: string
+                          type: object
+                        keyless:
+                          description: Keyless sets the configuration to verify the
+                            authority against a Fulcio instance.
+                          properties:
+                            identities:
+                              description: Identities sets a list of identities.
+                              items:
+                                description: |-
+                                  Identity may contain the issuer and/or the subject found in the transparency
+                                  log.
+                                  Issuer/Subject uses a strict match, while IssuerRegExp and SubjectRegExp
+                                  apply a regexp for matching.
+                                properties:
+                                  issuer:
+                                    description: Issuer defines the issuer for this
+                                      identity.
+                                    type: string
+                                  issuerRegExp:
+                                    description: IssuerRegExp specifies a regular
+                                      expression to match the issuer for this identity.
+                                    type: string
+                                  subject:
+                                    description: Subject defines the subject for this
+                                      identity.
+                                    type: string
+                                  subjectRegExp:
+                                    description: SubjectRegExp specifies a regular
+                                      expression to match the subject for this identity.
+                                    type: string
+                                type: object
+                              type: array
+                            roots:
+                              description: |-
+                                Roots is an optional set of PEM encoded trusted root certificates.
+                                If not provided, the system roots are used.
+                              type: string
+                          required:
+                          - identities
+                          type: object
+                        source:
+                          description: Sources sets the configuration to specify the
+                            sources from where to consume the signature and attestations.
+                          properties:
+                            PullSecrets:
+                              description: |-
+                                SignaturePullSecrets is an optional list of references to secrets in the
+                                same namespace as the deploying resource for pulling any of the signatures
+                                used by this Source.
+                              items:
+                                description: |-
+                                  LocalObjectReference contains enough information to let you locate the
+                                  referenced object inside the same namespace.
+                                properties:
+                                  name:
+                                    default: ""
+                                    description: |-
+                                      Name of the referent.
+                                      This field is effectively required, but due to backwards compatibility is
+                                      allowed to be empty. Instances of this type with an empty value here are
+                                      almost certainly wrong.
+                                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    type: string
+                                type: object
+                                x-kubernetes-map-type: atomic
+                              type: array
+                            repository:
+                              description: Repository defines the location from where
+                                to pull the signature / attestations.
+                              type: string
+                            tagPrefix:
+                              description: |-
+                                TagPrefix is an optional prefix that signature and attestations have.
+                                This is the 'tag based discovery' and in the future once references are
+                                fully supported that should likely be the preferred way to handle these.
+                              type: string
+                          type: object
+                        tuf:
+                          description: TUF defines the configuration to fetch sigstore
+                            root
+                          properties:
+                            mirror:
+                              description: Mirror is the base URL of Sigstore TUF
+                                repository
+                              type: string
+                            root:
+                              description: Root defines the path or data of the trusted
+                                root
+                              properties:
+                                data:
+                                  description: Data is the base64 encoded TUF root
+                                  type: string
+                                path:
+                                  description: Path is the URL or File location of
+                                    the TUF root
+                                  type: string
+                              type: object
+                          type: object
+                      type: object
+                    name:
+                      description: Name is the name for this attestor. It is used
+                        to refer to the attestor in verification
+                      type: string
+                    notary:
+                      description: Notary defines attestor configuration for Notary
+                        based signatures
+                      properties:
+                        certs:
+                          description: Certs define the cert chain for Notary signature
+                            verification
+                          oneOf:
+                          - required:
+                            - value
+                          - required:
+                            - expression
+                          properties:
+                            expression:
+                              description: Expression defines the a CEL expression
+                                input.
+                              type: string
+                            value:
+                              description: Value defines the raw string input.
+                              type: string
+                          type: object
+                        tsaCerts:
+                          description: TSACerts define the cert chain for verifying
+                            timestamps of notary signature
+                          oneOf:
+                          - required:
+                            - value
+                          - required:
+                            - expression
+                          properties:
+                            expression:
+                              description: Expression defines the a CEL expression
+                                input.
+                              type: string
+                            value:
+                              description: Value defines the raw string input.
+                              type: string
+                          type: object
+                      type: object
+                  required:
+                  - name
+                  type: object
+                type: array
               auditAnnotations:
                 description: |-
                   auditAnnotations contains CEL expressions which are used to produce audit
@@ -1683,16 +2711,37 @@ spec:
                           type: string
                         type: array
                     type: object
-                  validatingAdmissionPolicy:
-                    description: ValidatingAdmissionPolicy specifies whether to generate
-                      a Kubernetes ValidatingAdmissionPolicy.
-                    properties:
-                      enabled:
-                        description: |-
-                          Enabled specifies whether to generate a Kubernetes ValidatingAdmissionPolicy.
-                          Optional. Defaults to "false" if not specified.
-                        type: boolean
-                    type: object
+                type: object
+              credentials:
+                description: Credentials provides credentials that will be used for
+                  authentication with registry.
+                properties:
+                  allowInsecureRegistry:
+                    description: AllowInsecureRegistry allows insecure access to a
+                      registry.
+                    type: boolean
+                  providers:
+                    description: |-
+                      Providers specifies a list of OCI Registry names, whose authentication providers are provided.
+                      It can be of one of these values: default,google,azure,amazon,github.
+                    items:
+                      description: CredentialsProvidersType provides the list of credential
+                        providers required.
+                      enum:
+                      - default
+                      - amazon
+                      - azure
+                      - google
+                      - github
+                      type: string
+                    type: array
+                  secrets:
+                    description: |-
+                      Secrets specifies a list of secrets that are provided for credentials.
+                      Secrets must live in the Kyverno namespace.
+                    items:
+                      type: string
+                    type: array
                 type: object
               evaluation:
                 description: EvaluationConfiguration defines the configuration for
@@ -1729,32 +2778,37 @@ spec:
                 type: object
               failurePolicy:
                 description: |-
-                  failurePolicy defines how to handle failures for the admission policy. Failures can
+                  FailurePolicy defines how to handle failures for the admission policy. Failures can
                   occur from CEL expression parse errors, type check errors, runtime errors and invalid
                   or mis-configured policy definitions or bindings.
-
-                  failurePolicy does not define how validations that evaluate to false are handled.
-
-                  When failurePolicy is set to Fail, the validationActions field define how failures are enforced.
-
-                  Allowed values are Ignore or Fail. Defaults to Fail.
                 enum:
                 - Ignore
                 - Fail
                 type: string
+              images:
+                description: ImageExtractors is a list of CEL expression to extract
+                  images from the resource
+                items:
+                  properties:
+                    expression:
+                      description: Expression defines CEL expression to extract images
+                        from the resource.
+                      type: string
+                    name:
+                      description: Name is the name for this imageList. It is used
+                        to refer to the images in verification block as images.<name>
+                      type: string
+                  required:
+                  - expression
+                  - name
+                  type: object
+                type: array
               matchConditions:
                 description: |-
                   MatchConditions is a list of conditions that must be met for a request to be validated.
                   Match conditions filter requests that have already been matched by the rules,
                   namespaceSelector, and objectSelector. An empty list of matchConditions matches all requests.
                   There are a maximum of 64 match conditions allowed.
-
-                  The exact matching logic is (in order):
-                    1. If ANY matchCondition evaluates to FALSE, the policy is skipped.
-                    2. If ALL matchConditions evaluate to TRUE, the policy is evaluated.
-                    3. If any matchCondition evaluates to an error (but none are FALSE):
-                       - If failurePolicy=Fail, reject the request
-                       - If failurePolicy=Ignore, the policy is skipped
                 items:
                   description: MatchCondition represents a condition which must by
                     fulfilled for a request to be sent to a webhook.
@@ -1792,14 +2846,9 @@ spec:
                   - name
                   type: object
                 type: array
-                x-kubernetes-list-map-keys:
-                - name
-                x-kubernetes-list-type: map
               matchConstraints:
-                description: |-
-                  MatchConstraints specifies what resources this policy is designed to validate.
-                  The AdmissionPolicy cares about a request if it matches _all_ Constraints.
-                  Required.
+                description: MatchConstraints specifies what resources this policy
+                  is designed to validate.
                 properties:
                   excludeResourceRules:
                     description: |-
@@ -2130,6 +3179,30 @@ spec:
                     x-kubernetes-list-type: atomic
                 type: object
                 x-kubernetes-map-type: atomic
+              matchImageReferences:
+                description: |-
+                  MatchImageReferences is a list of Glob and CELExpressions to match images.
+                  Any image that matches one of the rules is considered for validation
+                  Any image that does not match a rule is skipped, even when they are passed as arguments to
+                  image verification functions
+                items:
+                  description: MatchImageReference defines a Glob or a CEL expression
+                    for matching images
+                  oneOf:
+                  - required:
+                    - glob
+                  - required:
+                    - expression
+                  properties:
+                    expression:
+                      description: Expression defines CEL Expressions for matching
+                        images
+                      type: string
+                    glob:
+                      description: Glob defines a globbing pattern for matching images
+                      type: string
+                  type: object
+                type: array
               validationActions:
                 description: |-
                   ValidationAction specifies the action to be taken when the matched resource violates the policy.
@@ -2169,11 +3242,31 @@ spec:
                   type: string
                 type: array
                 x-kubernetes-list-type: set
+              validationConfigurations:
+                default: {}
+                description: ValidationConfigurations defines settings for mutating
+                  and verifying image digests, and enforcing image verification through
+                  signatures.
+                properties:
+                  mutateDigest:
+                    default: true
+                    description: |-
+                      MutateDigest enables replacement of image tags with digests.
+                      Defaults to true.
+                    type: boolean
+                  required:
+                    default: true
+                    description: Required validates that images are verified, i.e.,
+                      have passed a signature or attestation check.
+                    type: boolean
+                  verifyDigest:
+                    default: true
+                    description: VerifyDigest validates that images have a digest.
+                    type: boolean
+                type: object
               validations:
-                description: |-
-                  Validations contain CEL expressions which is used to apply the validation.
-                  Validations and AuditAnnotations may not both be empty; a minimum of one Validations or AuditAnnotations is
-                  required.
+                description: Validations contain CEL expressions which is used to
+                  apply the image validation checks.
                 items:
                   description: Validation specifies the CEL expression which is used
                     to apply the validation.
@@ -2270,11 +3363,6 @@ spec:
                 description: |-
                   Variables contain definitions of variables that can be used in composition of other expressions.
                   Each variable is defined as a named CEL expression.
-                  The variables defined here will be available under `variables` in other expressions of the policy
-                  except MatchConditions because MatchConditions are evaluated before the rest of the policy.
-
-                  The expression of a variable can refer to other variables defined earlier in the list but not those after.
-                  Thus, Variables must be sorted by the order of first appearance and acyclic.
                 items:
                   description: Variable is the definition of a variable that is used
                     for composition. A variable is defined as a named expression.
@@ -2296,9 +3384,6 @@ spec:
                   type: object
                   x-kubernetes-map-type: atomic
                 type: array
-                x-kubernetes-list-map-keys:
-                - name
-                x-kubernetes-list-type: map
               webhookConfiguration:
                 description: WebhookConfiguration defines the configuration for the
                   webhook.
@@ -2311,6 +3396,9 @@ spec:
                     format: int32
                     type: integer
                 type: object
+            required:
+            - attestors
+            - validations
             type: object
           status:
             description: Status contains policy runtime data.
@@ -2321,9 +3409,323 @@ spec:
                     additionalProperties:
                       properties:
                         spec:
-                          description: ValidatingPolicySpec is the specification of
-                            the desired behavior of the ValidatingPolicy.
+                          description: ImageValidatingPolicySpec is the specification
+                            of the desired behavior of the ImageValidatingPolicy.
                           properties:
+                            attestations:
+                              description: Attestations provides a list of image metadata
+                                to verify
+                              items:
+                                description: Attestation defines the identification
+                                  details of the  metadata that has to be verified
+                                properties:
+                                  intoto:
+                                    description: InToto defines the details of attestation
+                                      attached using intoto format
+                                    properties:
+                                      type:
+                                        description: Type defines the type of attestation
+                                          contained within the statement.
+                                        type: string
+                                    required:
+                                    - type
+                                    type: object
+                                  name:
+                                    description: Name is the name for this attestation.
+                                      It is used to refer to the attestation in verification
+                                    type: string
+                                  referrer:
+                                    description: Referrer defines the details of attestation
+                                      attached using OCI 1.1 format
+                                    properties:
+                                      type:
+                                        description: Type defines the type of attestation
+                                          attached to the image.
+                                        type: string
+                                    required:
+                                    - type
+                                    type: object
+                                required:
+                                - name
+                                type: object
+                              type: array
+                            attestors:
+                              description: Attestors provides a list of trusted authorities.
+                              items:
+                                description: Attestor is an identity that confirms
+                                  or verifies the authenticity of an image or an attestation
+                                oneOf:
+                                - required:
+                                  - cosign
+                                - required:
+                                  - notary
+                                properties:
+                                  cosign:
+                                    description: Cosign defines attestor configuration
+                                      for Cosign based signatures
+                                    properties:
+                                      annotations:
+                                        additionalProperties:
+                                          type: string
+                                        description: |-
+                                          Annotations are used for image verification.
+                                          Every specified key-value pair must exist and match in the verified payload.
+                                          The payload may contain other key-value pairs.
+                                        type: object
+                                      certificate:
+                                        description: Certificate defines the configuration
+                                          for local signature verification
+                                        properties:
+                                          cert:
+                                            description: Certificate is the to the
+                                              public certificate for local signature
+                                              verification.
+                                            oneOf:
+                                            - required:
+                                              - value
+                                            - required:
+                                              - expression
+                                            properties:
+                                              expression:
+                                                description: Expression defines the
+                                                  a CEL expression input.
+                                                type: string
+                                              value:
+                                                description: Value defines the raw
+                                                  string input.
+                                                type: string
+                                            type: object
+                                          certChain:
+                                            description: |-
+                                              CertificateChain is the list of CA certificates in PEM format which will be needed
+                                              when building the certificate chain for the signing certificate. Must start with the
+                                              parent intermediate CA certificate of the signing certificate and end with the root certificate
+                                            oneOf:
+                                            - required:
+                                              - value
+                                            - required:
+                                              - expression
+                                            properties:
+                                              expression:
+                                                description: Expression defines the
+                                                  a CEL expression input.
+                                                type: string
+                                              value:
+                                                description: Value defines the raw
+                                                  string input.
+                                                type: string
+                                            type: object
+                                        type: object
+                                      ctlog:
+                                        description: CTLog sets the configuration
+                                          to verify the authority against a Rekor
+                                          instance.
+                                        properties:
+                                          ctLogPubKey:
+                                            description: CTLogPubKey, if set, is used
+                                              to validate SCTs against a custom source.
+                                            type: string
+                                          insecureIgnoreSCT:
+                                            description: |-
+                                              IgnoreSCT defines whether to use the Signed Certificate Timestamp (SCT) log to check for a certificate
+                                              timestamp. Default is false. Set to true if this was opted out during signing.
+                                            type: boolean
+                                          insecureIgnoreTlog:
+                                            description: InsecureIgnoreTlog skips
+                                              transparency log verification.
+                                            type: boolean
+                                          rekorPubKey:
+                                            description: |-
+                                              RekorPubKey is an optional PEM-encoded public key to use for a custom Rekor.
+                                              If set, this will be used to validate transparency log signatures from a custom Rekor.
+                                            type: string
+                                          tsaCertChain:
+                                            description: |-
+                                              TSACertChain, if set, is the PEM-encoded certificate chain file for the RFC3161 timestamp authority. Must
+                                              contain the root CA certificate. Optionally may contain intermediate CA certificates, and
+                                              may contain the leaf TSA certificate if not present in the timestamurce.
+                                            type: string
+                                          url:
+                                            description: URL sets the url to the rekor
+                                              instance (by default the public rekor.sigstore.dev)
+                                            type: string
+                                        type: object
+                                      key:
+                                        description: Key defines the type of key to
+                                          validate the image.
+                                        properties:
+                                          data:
+                                            description: Data contains the inline
+                                              public key
+                                            type: string
+                                          expression:
+                                            description: Expression is a Expression
+                                              expression that returns the public key.
+                                            type: string
+                                          hashAlgorithm:
+                                            description: |-
+                                              HashAlgorithm specifues signature algorithm for public keys. Supported values are
+                                              sha224, sha256, sha384 and sha512. Defaults to sha256.
+                                            type: string
+                                          kms:
+                                            description: |-
+                                              KMS contains the KMS url of the public key
+                                              Supported formats differ based on the KMS system used.
+                                            type: string
+                                        type: object
+                                      keyless:
+                                        description: Keyless sets the configuration
+                                          to verify the authority against a Fulcio
+                                          instance.
+                                        properties:
+                                          identities:
+                                            description: Identities sets a list of
+                                              identities.
+                                            items:
+                                              description: |-
+                                                Identity may contain the issuer and/or the subject found in the transparency
+                                                log.
+                                                Issuer/Subject uses a strict match, while IssuerRegExp and SubjectRegExp
+                                                apply a regexp for matching.
+                                              properties:
+                                                issuer:
+                                                  description: Issuer defines the
+                                                    issuer for this identity.
+                                                  type: string
+                                                issuerRegExp:
+                                                  description: IssuerRegExp specifies
+                                                    a regular expression to match
+                                                    the issuer for this identity.
+                                                  type: string
+                                                subject:
+                                                  description: Subject defines the
+                                                    subject for this identity.
+                                                  type: string
+                                                subjectRegExp:
+                                                  description: SubjectRegExp specifies
+                                                    a regular expression to match
+                                                    the subject for this identity.
+                                                  type: string
+                                              type: object
+                                            type: array
+                                          roots:
+                                            description: |-
+                                              Roots is an optional set of PEM encoded trusted root certificates.
+                                              If not provided, the system roots are used.
+                                            type: string
+                                        required:
+                                        - identities
+                                        type: object
+                                      source:
+                                        description: Sources sets the configuration
+                                          to specify the sources from where to consume
+                                          the signature and attestations.
+                                        properties:
+                                          PullSecrets:
+                                            description: |-
+                                              SignaturePullSecrets is an optional list of references to secrets in the
+                                              same namespace as the deploying resource for pulling any of the signatures
+                                              used by this Source.
+                                            items:
+                                              description: |-
+                                                LocalObjectReference contains enough information to let you locate the
+                                                referenced object inside the same namespace.
+                                              properties:
+                                                name:
+                                                  default: ""
+                                                  description: |-
+                                                    Name of the referent.
+                                                    This field is effectively required, but due to backwards compatibility is
+                                                    allowed to be empty. Instances of this type with an empty value here are
+                                                    almost certainly wrong.
+                                                    More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                                  type: string
+                                              type: object
+                                              x-kubernetes-map-type: atomic
+                                            type: array
+                                          repository:
+                                            description: Repository defines the location
+                                              from where to pull the signature / attestations.
+                                            type: string
+                                          tagPrefix:
+                                            description: |-
+                                              TagPrefix is an optional prefix that signature and attestations have.
+                                              This is the 'tag based discovery' and in the future once references are
+                                              fully supported that should likely be the preferred way to handle these.
+                                            type: string
+                                        type: object
+                                      tuf:
+                                        description: TUF defines the configuration
+                                          to fetch sigstore root
+                                        properties:
+                                          mirror:
+                                            description: Mirror is the base URL of
+                                              Sigstore TUF repository
+                                            type: string
+                                          root:
+                                            description: Root defines the path or
+                                              data of the trusted root
+                                            properties:
+                                              data:
+                                                description: Data is the base64 encoded
+                                                  TUF root
+                                                type: string
+                                              path:
+                                                description: Path is the URL or File
+                                                  location of the TUF root
+                                                type: string
+                                            type: object
+                                        type: object
+                                    type: object
+                                  name:
+                                    description: Name is the name for this attestor.
+                                      It is used to refer to the attestor in verification
+                                    type: string
+                                  notary:
+                                    description: Notary defines attestor configuration
+                                      for Notary based signatures
+                                    properties:
+                                      certs:
+                                        description: Certs define the cert chain for
+                                          Notary signature verification
+                                        oneOf:
+                                        - required:
+                                          - value
+                                        - required:
+                                          - expression
+                                        properties:
+                                          expression:
+                                            description: Expression defines the a
+                                              CEL expression input.
+                                            type: string
+                                          value:
+                                            description: Value defines the raw string
+                                              input.
+                                            type: string
+                                        type: object
+                                      tsaCerts:
+                                        description: TSACerts define the cert chain
+                                          for verifying timestamps of notary signature
+                                        oneOf:
+                                        - required:
+                                          - value
+                                        - required:
+                                          - expression
+                                        properties:
+                                          expression:
+                                            description: Expression defines the a
+                                              CEL expression input.
+                                            type: string
+                                          value:
+                                            description: Value defines the raw string
+                                              input.
+                                            type: string
+                                        type: object
+                                    type: object
+                                required:
+                                - name
+                                type: object
+                              type: array
                             auditAnnotations:
                               description: |-
                                 auditAnnotations contains CEL expressions which are used to produce audit
@@ -2389,16 +3791,37 @@ spec:
                                         type: string
                                       type: array
                                   type: object
-                                validatingAdmissionPolicy:
-                                  description: ValidatingAdmissionPolicy specifies
-                                    whether to generate a Kubernetes ValidatingAdmissionPolicy.
-                                  properties:
-                                    enabled:
-                                      description: |-
-                                        Enabled specifies whether to generate a Kubernetes ValidatingAdmissionPolicy.
-                                        Optional. Defaults to "false" if not specified.
-                                      type: boolean
-                                  type: object
+                              type: object
+                            credentials:
+                              description: Credentials provides credentials that will
+                                be used for authentication with registry.
+                              properties:
+                                allowInsecureRegistry:
+                                  description: AllowInsecureRegistry allows insecure
+                                    access to a registry.
+                                  type: boolean
+                                providers:
+                                  description: |-
+                                    Providers specifies a list of OCI Registry names, whose authentication providers are provided.
+                                    It can be of one of these values: default,google,azure,amazon,github.
+                                  items:
+                                    description: CredentialsProvidersType provides
+                                      the list of credential providers required.
+                                    enum:
+                                    - default
+                                    - amazon
+                                    - azure
+                                    - google
+                                    - github
+                                    type: string
+                                  type: array
+                                secrets:
+                                  description: |-
+                                    Secrets specifies a list of secrets that are provided for credentials.
+                                    Secrets must live in the Kyverno namespace.
+                                  items:
+                                    type: string
+                                  type: array
                               type: object
                             evaluation:
                               description: EvaluationConfiguration defines the configuration
@@ -2436,32 +3859,38 @@ spec:
                               type: object
                             failurePolicy:
                               description: |-
-                                failurePolicy defines how to handle failures for the admission policy. Failures can
+                                FailurePolicy defines how to handle failures for the admission policy. Failures can
                                 occur from CEL expression parse errors, type check errors, runtime errors and invalid
                                 or mis-configured policy definitions or bindings.
-
-                                failurePolicy does not define how validations that evaluate to false are handled.
-
-                                When failurePolicy is set to Fail, the validationActions field define how failures are enforced.
-
-                                Allowed values are Ignore or Fail. Defaults to Fail.
                               enum:
                               - Ignore
                               - Fail
                               type: string
+                            images:
+                              description: ImageExtractors is a list of CEL expression
+                                to extract images from the resource
+                              items:
+                                properties:
+                                  expression:
+                                    description: Expression defines CEL expression
+                                      to extract images from the resource.
+                                    type: string
+                                  name:
+                                    description: Name is the name for this imageList.
+                                      It is used to refer to the images in verification
+                                      block as images.<name>
+                                    type: string
+                                required:
+                                - expression
+                                - name
+                                type: object
+                              type: array
                             matchConditions:
                               description: |-
                                 MatchConditions is a list of conditions that must be met for a request to be validated.
                                 Match conditions filter requests that have already been matched by the rules,
                                 namespaceSelector, and objectSelector. An empty list of matchConditions matches all requests.
                                 There are a maximum of 64 match conditions allowed.
-
-                                The exact matching logic is (in order):
-                                  1. If ANY matchCondition evaluates to FALSE, the policy is skipped.
-                                  2. If ALL matchConditions evaluate to TRUE, the policy is evaluated.
-                                  3. If any matchCondition evaluates to an error (but none are FALSE):
-                                     - If failurePolicy=Fail, reject the request
-                                     - If failurePolicy=Ignore, the policy is skipped
                               items:
                                 description: MatchCondition represents a condition
                                   which must by fulfilled for a request to be sent
@@ -2500,14 +3929,9 @@ spec:
                                 - name
                                 type: object
                               type: array
-                              x-kubernetes-list-map-keys:
-                              - name
-                              x-kubernetes-list-type: map
                             matchConstraints:
-                              description: |-
-                                MatchConstraints specifies what resources this policy is designed to validate.
-                                The AdmissionPolicy cares about a request if it matches _all_ Constraints.
-                                Required.
+                              description: MatchConstraints specifies what resources
+                                this policy is designed to validate.
                               properties:
                                 excludeResourceRules:
                                   description: |-
@@ -2842,6 +4266,31 @@ spec:
                                   x-kubernetes-list-type: atomic
                               type: object
                               x-kubernetes-map-type: atomic
+                            matchImageReferences:
+                              description: |-
+                                MatchImageReferences is a list of Glob and CELExpressions to match images.
+                                Any image that matches one of the rules is considered for validation
+                                Any image that does not match a rule is skipped, even when they are passed as arguments to
+                                image verification functions
+                              items:
+                                description: MatchImageReference defines a Glob or
+                                  a CEL expression for matching images
+                                oneOf:
+                                - required:
+                                  - glob
+                                - required:
+                                  - expression
+                                properties:
+                                  expression:
+                                    description: Expression defines CEL Expressions
+                                      for matching images
+                                    type: string
+                                  glob:
+                                    description: Glob defines a globbing pattern for
+                                      matching images
+                                    type: string
+                                type: object
+                              type: array
                             validationActions:
                               description: |-
                                 ValidationAction specifies the action to be taken when the matched resource violates the policy.
@@ -2882,11 +4331,33 @@ spec:
                                 type: string
                               type: array
                               x-kubernetes-list-type: set
+                            validationConfigurations:
+                              default: {}
+                              description: ValidationConfigurations defines settings
+                                for mutating and verifying image digests, and enforcing
+                                image verification through signatures.
+                              properties:
+                                mutateDigest:
+                                  default: true
+                                  description: |-
+                                    MutateDigest enables replacement of image tags with digests.
+                                    Defaults to true.
+                                  type: boolean
+                                required:
+                                  default: true
+                                  description: Required validates that images are
+                                    verified, i.e., have passed a signature or attestation
+                                    check.
+                                  type: boolean
+                                verifyDigest:
+                                  default: true
+                                  description: VerifyDigest validates that images
+                                    have a digest.
+                                  type: boolean
+                              type: object
                             validations:
-                              description: |-
-                                Validations contain CEL expressions which is used to apply the validation.
-                                Validations and AuditAnnotations may not both be empty; a minimum of one Validations or AuditAnnotations is
-                                required.
+                              description: Validations contain CEL expressions which
+                                is used to apply the image validation checks.
                               items:
                                 description: Validation specifies the CEL expression
                                   which is used to apply the validation.
@@ -2996,11 +4467,6 @@ spec:
                               description: |-
                                 Variables contain definitions of variables that can be used in composition of other expressions.
                                 Each variable is defined as a named CEL expression.
-                                The variables defined here will be available under `variables` in other expressions of the policy
-                                except MatchConditions because MatchConditions are evaluated before the rest of the policy.
-
-                                The expression of a variable can refer to other variables defined earlier in the list but not those after.
-                                Thus, Variables must be sorted by the order of first appearance and acyclic.
                               items:
                                 description: Variable is the definition of a variable
                                   that is used for composition. A variable is defined
@@ -3023,9 +4489,6 @@ spec:
                                 type: object
                                 x-kubernetes-map-type: atomic
                               type: array
-                              x-kubernetes-list-map-keys:
-                              - name
-                              x-kubernetes-list-type: map
                             webhookConfiguration:
                               description: WebhookConfiguration defines the configuration
                                 for the webhook.
@@ -3038,6 +4501,9 @@ spec:
                                   format: int32
                                   type: integer
                               type: object
+                          required:
+                          - attestors
+                          - validations
                           type: object
                         targets:
                           items:
@@ -3134,18 +4600,11 @@ spec:
                       The conditions array, the reason and message fields contain more detail about the policy's status.
                     type: boolean
                 type: object
-              generated:
-                description: Generated indicates whether a ValidatingAdmissionPolicy/MutatingAdmissionPolicy
-                  is generated from the policy or not
-                type: boolean
             type: object
         required:
         - spec
         type: object
-    selectableFields:
-    - jsonPath: .spec.evaluation.mode
     served: true
-    storage: false
+    storage: true
     subresources:
       status: {}
-{{- end }}

@@ -1,6 +1,9 @@
 dependencies:
 - name: crds
   repository: ""
-  version: 3.6.3
-digest: sha256:272dbd02e32df79ac1c797c9984d60889c8bfc3e1898cf99d2d48860cbfff744
-generated: "2026-01-29T08:12:14.83884927Z"
+  version: 3.7.0
+- name: kyverno-api
+  repository: ""
+  version: 0.0.0
+digest: sha256:f332d2bb600c5b465629bbe68fe36103b90b248f31f43c5586985fbe6272ed7c
+generated: "2026-02-03T11:33:56.057712-03:00"

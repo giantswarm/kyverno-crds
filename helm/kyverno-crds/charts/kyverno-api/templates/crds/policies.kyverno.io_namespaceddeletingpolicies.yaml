@@ -1,28 +1,24 @@
-{{- if .Values.groups.policies.deletingpolicies }}
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
-    {{- include "kyverno.crds.labels" . | nindent 4 }}
+    {{- include "kyverno-api.labels" . | nindent 4 }}
   annotations:
-    {{- with .Values.annotations }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-    controller-gen.kubebuilder.io/version: v0.18.0
-  name: deletingpolicies.policies.kyverno.io
+    {{- include "kyverno-api.annotations" . | nindent 4 }}
+  name: namespaceddeletingpolicies.policies.kyverno.io
 spec:
   group: policies.kyverno.io
   names:
     categories:
     - kyverno
-    kind: DeletingPolicy
-    listKind: DeletingPolicyList
-    plural: deletingpolicies
+    kind: NamespacedDeletingPolicy
+    listKind: NamespacedDeletingPolicyList
+    plural: namespaceddeletingpolicies
     shortNames:
-    - dpol
-    singular: deletingpolicy
-  scope: Cluster
+    - ndpol
+    singular: namespaceddeletingpolicy
+  scope: Namespaced
   versions:
   - additionalPrinterColumns:
     - jsonPath: .metadata.creationTimestamp
@@ -31,7 +27,7 @@ spec:
     - jsonPath: .status.conditionStatus.ready
       name: READY
       type: string
-    name: v1alpha1
+    name: v1
     schema:
       openAPIV3Schema:
         properties:
@@ -573,7 +569,7 @@ spec:
         - spec
         type: object
     served: true
-    storage: true
+    storage: false
     subresources:
       status: {}
   - additionalPrinterColumns:
@@ -1125,7 +1121,6 @@ spec:
         - spec
         type: object
     served: true
-    storage: false
+    storage: true
     subresources:
       status: {}
-{{- end }}

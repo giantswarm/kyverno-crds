@@ -6,7 +6,16 @@ directories:
   - path: .
     git:
       url: https://github.com/giantswarm/kyverno-upstream
-      ref: v1.16.3
+      ref: v1.17.0
     includePaths:
       - charts/kyverno/charts/crds/**
     newRootPath: charts/kyverno/charts/crds/
+- path: helm/kyverno-crds/charts/kyverno-api
+  contents:
+  - path: .
+    git:
+      url: https://github.com/kyverno/api
+      ref: v0.0.1-alpha.2
+    includePaths:
+      - charts/kyverno-api/**
+    newRootPath: charts/kyverno-api/
