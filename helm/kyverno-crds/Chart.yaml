@@ -11,3 +11,5 @@ annotations:
 dependencies:
   - name: crds
     version: 3.7.0
+  - name: kyverno-api
+    version: 0.0.0
