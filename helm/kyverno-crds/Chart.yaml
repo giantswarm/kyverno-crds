@@ -8,6 +8,8 @@ sources:
 version: 1.17.0
 annotations:
   application.giantswarm.io/team: shield
+  io.giantswarm.application.audience: all
+  io.giantswarm.application.managed: "true"
 dependencies:
   - name: crds
     version: 3.7.0
