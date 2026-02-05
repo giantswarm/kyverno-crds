@@ -7,9 +7,9 @@ sources:
   - https://github.com/kyverno/kyverno
 version: 1.17.0
 annotations:
-  application.giantswarm.io/team: shield
   io.giantswarm.application.audience: all
   io.giantswarm.application.managed: "true"
+  io.giantswarm.application.team: shield
 dependencies:
   - name: crds
     version: 3.7.0
