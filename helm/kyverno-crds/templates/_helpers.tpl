@@ -37,5 +37,5 @@ helm.sh/chart: {{ include "chart" . | quote }}
 {{- end -}}
 
 {{- define "labels.dummy" -}}
-application.giantswarm.io/team: {{ index .Chart.Annotations "application.giantswarm.io/team" | quote }}
+application.giantswarm.io/team: {{ index .Chart.Annotations "io.giantswarm.application.team" | quote }}
 {{- end -}}
