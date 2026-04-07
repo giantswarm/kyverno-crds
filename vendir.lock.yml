@@ -2,10 +2,18 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'release: v1.17.0 (#15089)...'
-      sha: 3e5e775669753daae01e280298f85b4604db9198
+      commitTitle: 'release: v1.17.1 (#15308)...'
+      sha: 0fe91382401630df2c26c5525dd9eb9c0df1b0ef
       tags:
-      - v1.17.0
+      - v1.17.1
     path: .
   path: helm/kyverno-crds/charts/crds
+- contents:
+  - git:
+      commitTitle: 'refactor: reuse structs to get better backward compatibility (#46)...'
+      sha: 2930548bd505235d088c9648e874d87599568cc4
+      tags:
+      - v0.0.1-alpha.2
+    path: .
+  path: helm/kyverno-crds/charts/kyverno-api
 kind: LockConfig
