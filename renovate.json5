@@ -6,16 +6,6 @@
     "github>giantswarm/renovate-presets:disable-upstream-charts.json5"
   ],
   "automerge": true,
-  "customManagers": [
-    {
-      "customType": "regex",
-      "managerFilePatterns": ["/(^|/)vendir\\.yml$/"],
-      "matchStrings": [
-        "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\n]+)\\n\\s+ref: (?<currentValue>[^\\n]+)"
-      ],
-      "versioningTemplate": "semver"
-    }
-  ],
   "packageRules": [
     {
       "description": "Automerge architect updates",
