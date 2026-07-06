@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update `kyverno-crds` chart to upstream version `v1.17.2`.
 - Migrate chart annotations to OCI-compatible format (change `application.giantswarm.io/team` to `io.giantswarm.application.team`).
+- Updated `crds` to upstream version `v3.8.1`.
 
 ## [1.17.0] - 2026-02-03
 
@@ -38,7 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Notes
 
 This release includes an upstream update. Please refer to the following Release Notes from upstream for the latest changes:
-
 - [1.15.0](https://github.com/kyverno/kyverno/releases/tag/v1.15.0)
 - [1.15.1](https://github.com/kyverno/kyverno/releases/tag/v1.15.1)
 - [1.15.2](https://github.com/kyverno/kyverno/releases/tag/v1.15.2)
@@ -52,7 +52,6 @@ This release includes an upstream update. Please refer to the following Release 
 ### Notes
 
 This release includes an upstream update. Please refer to the following Release Notes from upstream for the latest changes:
-
 - [1.14.0](https://github.com/kyverno/kyverno/releases/tag/v1.14.0)
 - [1.14.1](https://github.com/kyverno/kyverno/releases/tag/v1.14.1)
 - [1.14.2](https://github.com/kyverno/kyverno/releases/tag/v1.14.2)
