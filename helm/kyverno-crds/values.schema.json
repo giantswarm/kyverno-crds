@@ -15,8 +15,7 @@
                     }
                 },
                 "customLabels": {
-                    "type": "object",
-                    "additionalProperties": false
+                    "type": "object"
                 },
                 "groups": {
                     "type": "object",
