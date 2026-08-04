@@ -56,7 +56,7 @@ def test_crds(
 @pytest.fixture(scope="module")
 def app_job(kube_cluster: Cluster) -> List[pykube.Job]:
     job = wait_for_jobs_to_complete(
-        kube_cluster.kube_client,   
+        kube_cluster.kube_client,
         ["kyverno-crds-install-job"],
         namespace_name,
         timeout,

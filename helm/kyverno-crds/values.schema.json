@@ -1,15 +1,13 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
         "crds": {
             "type": "object",
-            "additionalProperties": false,
             "properties": {
                 "annotations": {
                     "type": "object",
-                    "additionalProperties": false,
                     "properties": {
                         "helm.sh/resource-policy": {
                             "type": "string"
@@ -22,12 +20,10 @@
                 },
                 "groups": {
                     "type": "object",
-                    "additionalProperties": false,
                     "properties": {
                         "kyverno": {
                             "type": "object",
                             "description": "Install CRDs in group `kyverno.io`",
-                            "additionalProperties": false,
                             "properties": {
                                 "cleanuppolicies": {
                                     "type": "boolean"
@@ -55,7 +51,6 @@
                         "policies": {
                             "type": "object",
                             "description": "Install CRDs in group `reports.kyverno.io`",
-                            "additionalProperties": false,
                             "properties": {
                                 "deletingpolicies": {
                                     "type": "boolean"
@@ -92,7 +87,6 @@
                         "reports": {
                             "type": "object",
                             "description": "This field can be overwritten by setting crds.labels in the parent chart",
-                            "additionalProperties": false,
                             "properties": {
                                 "clusterephemeralreports": {
                                     "type": "boolean"
@@ -105,7 +99,6 @@
                         "wgpolicyk8s": {
                             "type": "object",
                             "description": "Install CRDs in group `wgpolicyk8s.io`",
-                            "additionalProperties": false,
                             "properties": {
                                 "clusterpolicyreports": {
                                     "type": "boolean"
@@ -119,7 +112,6 @@
                 },
                 "reportsServer": {
                     "type": "object",
-                    "additionalProperties": false,
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -128,14 +120,6 @@
                     }
                 }
             }
-        },
-        "global": {
-            "type": [
-                "object",
-                "null"
-            ],
-            "description": "Global values shared between all subcharts",
-            "$comment": "Added automatically by 'helm schema' to allow this chart to be used as a Helm dependency, as the `additionalProperties` setting would otherwise collide with Helm's special 'global' values key."
         },
         "name": {
             "type": "string"
