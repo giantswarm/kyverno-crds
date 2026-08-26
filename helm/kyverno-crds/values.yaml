@@ -1,7 +1,7 @@
 name: kyverno-crds
 serviceType: managed
 
-crds:
+crds:  # @schema skipProperties: true; additionalProperties: true
   reportsServer:
       # -- Kyverno reports-server is used in your cluster
     enabled: false
@@ -46,3 +46,7 @@ crds:
     helm.sh/resource-policy: keep
 
   customLabels: {}
+
+# Vendored upstream subchart (charts/kyverno-api); declared so its coalesced
+# defaults are accepted by the generated schema.
+kyverno-api: {}  # @schema skipProperties: true; additionalProperties: true
