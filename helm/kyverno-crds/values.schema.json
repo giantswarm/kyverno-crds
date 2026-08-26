@@ -3,43 +3,9 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
-        "baseDomain": {
-            "type": "string"
-        },
-        "bootstrapMode": {
-            "type": "object",
-            "additionalProperties": true
-        },
-        "chartOperator": {
-            "type": "object",
-            "additionalProperties": true
-        },
-        "ciliumNetworkPolicy": {
-            "type": "object",
-            "additionalProperties": true
-        },
-        "cluster": {
-            "type": "object",
-            "additionalProperties": true
-        },
-        "clusterCA": {
-            "type": "string"
-        },
-        "clusterCIDR": {
-            "type": "string"
-        },
-        "clusterDNSIP": {
-            "type": "string"
-        },
-        "clusterID": {
-            "type": "string"
-        },
         "crds": {
             "type": "object",
             "additionalProperties": true
-        },
-        "gcpProject": {
-            "type": "string"
         },
         "global": {
             "type": [
@@ -53,24 +19,10 @@
             "type": "object",
             "additionalProperties": true
         },
-        "global": {
-            "type": [
-                "object",
-                "null"
-            ],
-            "description": "Global values shared between all subcharts",
-            "$comment": "Added automatically by 'helm schema' to allow this chart to be used as a Helm dependency, as the `additionalProperties` setting would otherwise collide with Helm's special 'global' values key."
-        },
         "name": {
             "type": "string"
         },
-        "provider": {
-            "type": "string"
-        },
         "serviceType": {
-            "type": "string"
-        },
-        "subscriptionID": {
             "type": "string"
         }
     }
