@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.18.0] - 2026-09-23
+
 ### Added
 
 - Add `io.giantswarm.application.audience` and `io.giantswarm.application.managed` chart annotations for Backstage visibility.
@@ -87,7 +89,8 @@ This release includes an upstream update. Please refer to the following Release 
 
 - First release of the Kyverno CRDs App for Kyverno v1.11.
 
-[Unreleased]: https://github.com/giantswarm/kyverno-crds/compare/v1.17.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kyverno-crds/compare/v1.18.0...HEAD
+[1.18.0]: https://github.com/giantswarm/kyverno-crds/compare/v1.17.0...v1.18.0
 [1.17.0]: https://github.com/giantswarm/kyverno-crds/compare/v1.16.0...v1.17.0
 [1.16.0]: https://github.com/giantswarm/kyverno-crds/compare/v1.15.0...v1.16.0
 [1.15.0]: https://github.com/giantswarm/kyverno-crds/compare/v1.14.0...v1.15.0
