@@ -2,18 +2,18 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'chore: cut v1.18.2 (#16526)...'
-      sha: 945ac9ce8546ea6cd51370f24b615148c577da5e
+      commitTitle: 'chore: cut release v1.19.1 (#17541)...'
+      sha: 40ec788d48bb28d83dbf85538e962a59db9d45c6
       tags:
-      - v1.18.2
+      - kyverno-chart-3.9.1
     path: .
   path: helm/kyverno-crds/charts/crds
 - contents:
   - git:
-      commitTitle: 'chore(deps): Bump k8s.io/apimachinery from 0.35.3 to 0.36.0 (#81)...'
-      sha: 68b1cb2aae2ddf6e92ab32ad26570962e638824f
+      commitTitle: 'feat: add compensating controls to PolicyException (#127)...'
+      sha: a58ce85f79531202aae7da8a80b3734c592a5242
       tags:
-      - v0.0.1-alpha.3
+      - v0.0.1-alpha.5
     path: .
   path: helm/kyverno-crds/charts/kyverno-api
 kind: LockConfig
