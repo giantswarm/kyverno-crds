@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.19.2] - 2026-11-04
+
 ### Changed
 
 - Updated `crds` to upstream version `v3.9.2`.
@@ -93,7 +95,8 @@ This release includes an upstream update. Please refer to the following Release 
 
 - First release of the Kyverno CRDs App for Kyverno v1.11.
 
-[Unreleased]: https://github.com/giantswarm/kyverno-crds/compare/v1.18.0...HEAD
+[Unreleased]: https://github.com/giantswarm/kyverno-crds/compare/v1.19.2...HEAD
+[1.19.2]: https://github.com/giantswarm/kyverno-crds/compare/v1.18.0...v1.19.2
 [1.18.0]: https://github.com/giantswarm/kyverno-crds/compare/v1.17.0...v1.18.0
 [1.17.0]: https://github.com/giantswarm/kyverno-crds/compare/v1.16.0...v1.17.0
 [1.16.0]: https://github.com/giantswarm/kyverno-crds/compare/v1.15.0...v1.16.0
