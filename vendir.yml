@@ -6,8 +6,8 @@ directories:
   - path: .
     git:
       url: https://github.com/kyverno/kyverno
-      # renovate: datasource=github-tags depName=kyverno/kyverno
-      ref: v1.19.2
+      # renovate: datasource=github-tags depName=kyverno/kyverno versioning=regex:^kyverno-chart-(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
+      ref: kyverno-chart-3.9.2
     includePaths:
       - charts/kyverno/charts/crds/**
     newRootPath: charts/kyverno/charts/crds/
